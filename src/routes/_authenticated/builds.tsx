@@ -72,8 +72,10 @@ function BuildsPage() {
           appId: appId!,
           platform,
           destination,
-          commitSha: commitSha.trim() || null,
-          confirmation: destination === "production" ? confirmation : null,
+          submitToInternal: destination === "internal",
+          uploadMetadata: true,
+          sourceSha: commitSha.trim() || undefined,
+          releaseOwnerConfirmation: destination === "production" ? confirmation : undefined,
         },
       });
     },
