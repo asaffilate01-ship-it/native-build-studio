@@ -60,13 +60,13 @@ export function OrganisationSetup() {
           that legally owns the developer accounts — you will be its owner.
         </p>
         <form onSubmit={create} className="mt-6 space-y-4">
-          <Field label="Organisation name" hint="For example, Haccora Ltd.">
+          <Field label="Organisation name" hint="For example, Example Brand Ltd.">
             <input
               value={name}
               onChange={(event) => setName(event.target.value)}
               required
               className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-              placeholder="Haccora Ltd"
+              placeholder="Example Brand Ltd"
             />
           </Field>
           {error ? (

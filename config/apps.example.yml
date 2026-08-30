@@ -1,11 +1,11 @@
 work_dir: ../.factory/work
 
 apps:
-  - slug: haccora
-    suite: haccora
-    app_role: main
+  - slug: example-customer
+    suite: example-platform
+    app_role: customer
     source:
-      repo: https://github.com/example/haccora.git
+      repo: https://github.com/example/example-platform.git
       ref: main
       package_manager: bun
       install_command: bun install --frozen-lockfile
@@ -14,9 +14,9 @@ apps:
     native:
       engine: capacitor
       runner: github-macos
-      display_name: Haccora
-      ios_bundle_id: uk.co.haccora.app
-      android_package: uk.co.haccora.app
+      display_name: Example Customer
+      ios_bundle_id: uk.co.example.customer
+      android_package: uk.co.example.customer
       version: 1.0.0
       build_number: 1
       ios_package_manager: spm
@@ -29,9 +29,9 @@ apps:
         - share
       embed_web_assets: true
     assets:
-      icon: ../assets/haccora/icon.png
-      splash: ../assets/haccora/splash.png
-      google_services_json: ../assets/haccora/google-services.json
+      icon: ../assets/example-customer/icon.png
+      splash: ../assets/example-customer/splash.png
+      google_services_json: ../assets/example-customer/google-services.json
     credentials:
       apple_key_id_env: APPLE_KEY_ID
       apple_issuer_id_env: APPLE_ISSUER_ID
@@ -43,12 +43,12 @@ apps:
       android_key_alias_env: ANDROID_KEY_ALIAS
       android_key_password_env: ANDROID_KEY_PASSWORD
     store:
-      brand_name: Haccora
-      legal_owner: iTechLounge Ltd
-      support_url: https://haccora.co.uk/support
-      privacy_url: https://haccora.co.uk/privacy
-      account_deletion_url: https://haccora.co.uk/delete-account
-      google_developer_name: Haccora
+      brand_name: Example Platform
+      legal_owner: Example Platform Ltd
+      support_url: https://example.co.uk/support
+      privacy_url: https://example.co.uk/privacy
+      account_deletion_url: https://example.co.uk/delete-account
+      google_developer_name: Example Platform
       play_track: internal
 
   - slug: example-expo-app

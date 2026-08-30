@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "native-app-factory"
-version = "0.5.0"
+version = "0.6.0"
 description = "Configuration-driven native build factory for Capacitor and Expo apps"
 requires-python = ">=3.11"
 dependencies = ["Flask>=3.1,<4", "PyYAML>=6.0,<7", "waitress>=3.0,<4"]

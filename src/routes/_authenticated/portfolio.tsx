@@ -23,7 +23,10 @@ export const Route = createFileRoute("/_authenticated/portfolio")({
         content: "Suites, role apps, permanent bundle IDs, source repositories and latest builds.",
       },
       { property: "og:title", content: "Portfolio — Native Factory Control Plane" },
-      { property: "og:description", content: "Every role app in your suite, with its permanent identity." },
+      {
+        property: "og:description",
+        content: "Every role app in your suite, with its permanent identity.",
+      },
     ],
   }),
   component: PortfolioPage,
@@ -139,60 +142,135 @@ function PortfolioPage() {
         >
           <h2 className="text-lg font-semibold">New role app</h2>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Suite" hint="Reuse one suite across roles, e.g. haccora.">
-              <input required value={form.suite} onChange={(e) => set("suite")(e.target.value)} className="rounded-md border border-input bg-background px-3 py-2 text-sm" />
+            <Field label="Suite" hint="Reuse one suite across roles, e.g. example-platform.">
+              <input
+                required
+                value={form.suite}
+                onChange={(e) => set("suite")(e.target.value)}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
             </Field>
             <Field label="Role" hint="customer, driver, kitchen…">
-              <input required value={form.app_role} onChange={(e) => set("app_role")(e.target.value)} className="rounded-md border border-input bg-background px-3 py-2 text-sm" />
+              <input
+                required
+                value={form.app_role}
+                onChange={(e) => set("app_role")(e.target.value)}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
             </Field>
-            <Field label="Slug" hint="Lower case and hyphens, e.g. haccora-customer.">
-              <input required value={form.slug} onChange={(e) => set("slug")(e.target.value)} className="rounded-md border border-input bg-background px-3 py-2 text-sm font-mono" />
+            <Field label="Slug" hint="Lower case and hyphens, e.g. example-customer.">
+              <input
+                required
+                value={form.slug}
+                onChange={(e) => set("slug")(e.target.value)}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
+              />
             </Field>
             <Field label="Display name">
-              <input required value={form.display_name} onChange={(e) => set("display_name")(e.target.value)} className="rounded-md border border-input bg-background px-3 py-2 text-sm" />
+              <input
+                required
+                value={form.display_name}
+                onChange={(e) => set("display_name")(e.target.value)}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
             </Field>
             <Field label="Source repository" hint="owner/repository">
-              <input required value={form.source_repo} onChange={(e) => set("source_repo")(e.target.value)} className="rounded-md border border-input bg-background px-3 py-2 text-sm font-mono" />
+              <input
+                required
+                value={form.source_repo}
+                onChange={(e) => set("source_repo")(e.target.value)}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
+              />
             </Field>
             <Field label="Branch">
-              <input required value={form.source_ref} onChange={(e) => set("source_ref")(e.target.value)} className="rounded-md border border-input bg-background px-3 py-2 text-sm font-mono" />
+              <input
+                required
+                value={form.source_ref}
+                onChange={(e) => set("source_ref")(e.target.value)}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
+              />
             </Field>
             <Field label="Engine">
-              <select value={form.engine} onChange={(e) => set("engine")(e.target.value)} className="rounded-md border border-input bg-background px-3 py-2 text-sm">
+              <select
+                value={form.engine}
+                onChange={(e) => set("engine")(e.target.value)}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+              >
                 <option value="capacitor">Capacitor</option>
                 <option value="expo">Expo</option>
               </select>
             </Field>
             <Field label="Runner">
-              <select value={form.runner} onChange={(e) => set("runner")(e.target.value)} className="rounded-md border border-input bg-background px-3 py-2 text-sm">
+              <select
+                value={form.runner}
+                onChange={(e) => set("runner")(e.target.value)}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+              >
                 <option value="github-macos">GitHub-hosted macOS</option>
                 <option value="mac">Self-managed Mac</option>
                 <option value="eas">EAS Build</option>
               </select>
             </Field>
-            <Field label="iOS bundle ID" hint="Permanent, e.g. uk.co.haccora.customer">
-              <input required value={form.ios_bundle_id} onChange={(e) => set("ios_bundle_id")(e.target.value)} className="rounded-md border border-input bg-background px-3 py-2 text-sm font-mono" />
+            <Field label="iOS bundle ID" hint="Permanent, e.g. uk.co.brand.customer">
+              <input
+                required
+                value={form.ios_bundle_id}
+                onChange={(e) => set("ios_bundle_id")(e.target.value)}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
+              />
             </Field>
             <Field label="Android package" hint="Permanent, must match Play Console.">
-              <input required value={form.android_package} onChange={(e) => set("android_package")(e.target.value)} className="rounded-md border border-input bg-background px-3 py-2 text-sm font-mono" />
+              <input
+                required
+                value={form.android_package}
+                onChange={(e) => set("android_package")(e.target.value)}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
+              />
             </Field>
             <Field label="Legal owner" hint="The organisation that owns the developer accounts.">
-              <input value={form.legal_owner} onChange={(e) => set("legal_owner")(e.target.value)} className="rounded-md border border-input bg-background px-3 py-2 text-sm" />
+              <input
+                value={form.legal_owner}
+                onChange={(e) => set("legal_owner")(e.target.value)}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
             </Field>
             <Field label="Public brand">
-              <input value={form.public_brand} onChange={(e) => set("public_brand")(e.target.value)} className="rounded-md border border-input bg-background px-3 py-2 text-sm" />
+              <input
+                value={form.public_brand}
+                onChange={(e) => set("public_brand")(e.target.value)}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
             </Field>
             <Field label="Apple Team ID">
-              <input value={form.apple_team_id} onChange={(e) => set("apple_team_id")(e.target.value)} className="rounded-md border border-input bg-background px-3 py-2 text-sm font-mono" />
+              <input
+                value={form.apple_team_id}
+                onChange={(e) => set("apple_team_id")(e.target.value)}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
+              />
             </Field>
             <Field label="Apple App ID" hint="Numeric App Store Connect ID.">
-              <input value={form.apple_app_id} onChange={(e) => set("apple_app_id")(e.target.value)} className="rounded-md border border-input bg-background px-3 py-2 text-sm font-mono" />
+              <input
+                value={form.apple_app_id}
+                onChange={(e) => set("apple_app_id")(e.target.value)}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
+              />
             </Field>
             <Field label="Google developer name">
-              <input value={form.google_developer_name} onChange={(e) => set("google_developer_name")(e.target.value)} className="rounded-md border border-input bg-background px-3 py-2 text-sm" />
+              <input
+                value={form.google_developer_name}
+                onChange={(e) => set("google_developer_name")(e.target.value)}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
             </Field>
-            <Field label="Credential scope" hint="Which GitHub environment holds this app's secrets.">
-              <input value={form.credential_scope} onChange={(e) => set("credential_scope")(e.target.value)} className="rounded-md border border-input bg-background px-3 py-2 text-sm font-mono" />
+            <Field
+              label="Credential scope"
+              hint="Which GitHub environment holds this app's secrets."
+            >
+              <input
+                value={form.credential_scope}
+                onChange={(e) => set("credential_scope")(e.target.value)}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
+              />
             </Field>
           </div>
           {formError ? (
@@ -211,7 +289,9 @@ function PortfolioPage() {
       ) : null}
 
       {isLoading ? <LoadingState label="Loading your portfolio…" /> : null}
-      {error ? <ErrorState message={(error as Error).message} onRetry={() => void refetch()} /> : null}
+      {error ? (
+        <ErrorState message={(error as Error).message} onRetry={() => void refetch()} />
+      ) : null}
 
       {!isLoading && !error && !suites.length ? (
         <EmptyState
@@ -229,13 +309,17 @@ function PortfolioPage() {
             {(suiteApps ?? []).map((app) => {
               const build = (latestBuilds ?? []).find((b) => b.app_id === app.id);
               const checks = (readiness ?? []).filter((c) => c.app_id === app.id);
-              const done = checks.filter((c) => c.state === "done" || c.state === "not_applicable").length;
+              const done = checks.filter(
+                (c) => c.state === "done" || c.state === "not_applicable",
+              ).length;
               return (
                 <article key={app.id} className="panel flex flex-col gap-3 p-4">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
                       <h3 className="font-semibold">{app.display_name}</h3>
-                      <p className="ident">{app.slug} · {app.app_role}</p>
+                      <p className="ident">
+                        {app.slug} · {app.app_role}
+                      </p>
                     </div>
                     <StatusPill tone={app.active ? "success" : "neutral"}>
                       {app.active ? "Active" : "Inactive"}
@@ -264,7 +348,9 @@ function PortfolioPage() {
                   </dl>
 
                   <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
-                    <StatusPill tone={checks.length && done === checks.length ? "success" : "warning"}>
+                    <StatusPill
+                      tone={checks.length && done === checks.length ? "success" : "warning"}
+                    >
                       Readiness {checks.length ? `${done}/${checks.length}` : "not started"}
                     </StatusPill>
                     {build ? (

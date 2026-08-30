@@ -81,6 +81,16 @@ class PlanTests(unittest.TestCase):
         with patch.dict("os.environ", {"FACTORY_CI_RUN_NUMBER": "41"}):
             self.assertEqual(NativeFactory._build_number(app), 42)
 
+    def test_exact_source_sha_is_checked_out_for_reproducible_build(self) -> None:
+        config = load_config(make_config(self.tmp_path, "capacitor", "github-macos"))
+        runner = ProcessRunner(dry_run=True)
+        factory = NativeFactory(config, self.tmp_path / "templates", runner)
+        with patch.dict("os.environ", {"FACTORY_SOURCE_SHA": "a1b2c3d4e5f6"}):
+            plan = "\n".join(factory.build("test-app", "android"))
+        self.assertIn("--no-checkout", plan)
+        self.assertIn("fetch --depth 1 origin a1b2c3d4e5f6", plan)
+        self.assertIn("checkout --detach a1b2c3d4e5f6", plan)
+
 
 if __name__ == "__main__":
     unittest.main()

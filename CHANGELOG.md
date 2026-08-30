@@ -1,13 +1,14 @@
 # Changelog
 
-## 0.4.0
+## 0.6.0
 
-- Added a Lovable/ChatGPT Capacitor-ready brief generator.
-- Added complete per-app store copy, privacy/compliance, reviewer and marketing records.
-- Added screenshot/feature-graphic uploads and Fastlane-ready store packages.
-- Added optional metadata upload without automatic App Store review submission.
-- Added automatic Git/Lovable commits to TestFlight and Play Internal Testing.
-- Added an Appflow live-update path with native-change safety boundaries.
+- Made examples and dashboard copy project-neutral for a multi-brand portfolio.
+- Unified the Python controller with the Lovable `organisations` Supabase schema.
+- Added exact source-SHA builds and webhook propagation for reproducible binaries.
+- Added audited, app-specific approval records for the exact build that passed QA.
+- Connected authenticated Lovable server actions to protected GitHub workflows.
+- Added build and store-submission status callbacks from GitHub to Supabase.
+- Changed Play Internal Testing uploads from draft to tester-available completed releases.
 
 ## 0.5.0
 
@@ -17,6 +18,15 @@
 - Added a protected workflow that submits the exact tested TestFlight build or
   promotes the exact Play Internal version code after typed confirmation.
 - Added production GitHub Environments and staged Android rollout controls.
+
+## 0.4.0
+
+- Added a Lovable/ChatGPT Capacitor-ready brief generator.
+- Added complete per-app store copy, privacy/compliance, reviewer and marketing records.
+- Added screenshot/feature-graphic uploads and Fastlane-ready store packages.
+- Added optional metadata upload without automatic App Store review submission.
+- Added automatic Git/Lovable commits to TestFlight and Play Internal Testing.
+- Added an Appflow live-update path with native-change safety boundaries.
 
 ## 0.3.0
 

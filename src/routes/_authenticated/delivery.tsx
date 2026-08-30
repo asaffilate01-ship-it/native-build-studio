@@ -43,7 +43,12 @@ function DeliveryPage() {
   const [appflowChannel, setAppflowChannel] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
 
-  const { data: mappings, isLoading, error, refetch } = useQuery({
+  const {
+    data: mappings,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["delivery", currentOrgId],
     enabled: Boolean(currentOrgId),
     queryFn: async () => {
@@ -59,7 +64,8 @@ function DeliveryPage() {
 
   const save = useMutation({
     mutationFn: async () => {
-      if (!selected.length) throw new Error("Select at least one role app for this source repository.");
+      if (!selected.length)
+        throw new Error("Select at least one role app for this source repository.");
       const { error } = await supabase.from("update_delivery").insert({
         org_id: currentOrgId!,
         source_repo: sourceRepo.trim(),
@@ -82,7 +88,9 @@ function DeliveryPage() {
   });
 
   const toggle = (id: string, on: boolean) =>
-    setSelected((prev) => (on ? [...new Set([...prev, id])] : prev.filter((value) => value !== id)));
+    setSelected((prev) =>
+      on ? [...new Set([...prev, id])] : prev.filter((value) => value !== id),
+    );
 
   return (
     <>
@@ -106,7 +114,7 @@ function DeliveryPage() {
                 required
                 value={sourceRepo}
                 onChange={(event) => setSourceRepo(event.target.value)}
-                placeholder="haccora/haccora-web"
+                placeholder="your-org/your-lovable-app"
                 className="rounded-md border border-input bg-background px-3 py-2 font-mono text-sm"
               />
             </Field>
@@ -192,9 +200,14 @@ function DeliveryPage() {
       ) : null}
 
       {isLoading ? <LoadingState /> : null}
-      {error ? <ErrorState message={(error as Error).message} onRetry={() => void refetch()} /> : null}
+      {error ? (
+        <ErrorState message={(error as Error).message} onRetry={() => void refetch()} />
+      ) : null}
       {!isLoading && !(mappings ?? []).length ? (
-        <EmptyState title="No delivery mappings" description="Map a source repository to its role apps." />
+        <EmptyState
+          title="No delivery mappings"
+          description="Map a source repository to its role apps."
+        />
       ) : null}
 
       <div className="space-y-2">

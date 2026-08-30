@@ -25,8 +25,12 @@ on:
         required: true
         type: string
       confirmation:
-        description: Type SUBMIT followed by the app slug, for example SUBMIT haccora-customer
+        description: Type SUBMIT followed by the app slug, for example SUBMIT example-customer
         required: true
+        type: string
+      approval_id:
+        description: Supabase release approval UUID; blank for direct/manual runs
+        required: false
         type: string
 
 concurrency:
@@ -125,3 +129,20 @@ jobs:
             echo "- Source commit: $SOURCE_SHA"
             echo "- QA evidence: $QA_NOTES"
           } >> "$GITHUB_STEP_SUMMARY"
+      - name: Report release result to the control plane
+        if: always() && inputs.approval_id != ''
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          APPROVAL_ID: ${{ inputs.approval_id }}
+          JOB_STATUS: ${{ job.status }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          status=submitted
+          [ "$JOB_STATUS" = "success" ] || status=failed
+          curl --fail-with-body --request PATCH \
+            "$SUPABASE_URL/rest/v1/native_release_approvals?id=eq.$APPROVAL_ID" \
+            --header "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            --header "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            --header "Content-Type: application/json" \
+            --data "{\"status\":\"$status\",\"workflow_url\":\"$RUN_URL\",\"submitted_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}"

@@ -145,6 +145,7 @@ class StudioTests(unittest.TestCase):
         )
         self.assertIn('client_payload[submit]=true', workflow)
         self.assertIn('client_payload[metadata]=false', workflow)
+        self.assertIn('client_payload[source_sha]=$GITHUB_SHA', workflow)
 
     def test_store_workspace_generates_brief_and_submission_package(self) -> None:
         self.add_app("haccora-customer", "customer", "uk.co.haccora.customer")

@@ -6,12 +6,44 @@ type Role = "owner" | "release_owner" | "product_owner" | "member";
 type QueueBuildInput = {
   appId: string;
   platform: "ios" | "android" | "all";
-  destination: "internal" | "production";
   submitToInternal: boolean;
   uploadMetadata: boolean;
   sourceSha?: string | undefined;
-  releaseOwnerConfirmation?: string | undefined;
 };
+
+function githubSettings() {
+  const token = process.env.FACTORY_GITHUB_TOKEN?.trim();
+  const repository = process.env.FACTORY_GITHUB_REPOSITORY?.trim();
+  const ref = process.env.FACTORY_GITHUB_REF?.trim() || "main";
+  if (!token || !repository || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repository)) {
+    throw new Error(
+      "The build bridge is not configured. Set FACTORY_GITHUB_TOKEN and FACTORY_GITHUB_REPOSITORY as server-only secrets.",
+    );
+  }
+  return { token, repository, ref };
+}
+
+async function dispatchWorkflow(workflow: string, inputs: Record<string, string>) {
+  const { token, repository, ref } = githubSettings();
+  const response = await fetch(
+    `https://api.github.com/repos/${repository}/actions/workflows/${workflow}/dispatches`,
+    {
+      method: "POST",
+      headers: {
+        Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
+      body: JSON.stringify({ ref, inputs }),
+    },
+  );
+  if (!response.ok) {
+    const detail = (await response.text()).slice(0, 500);
+    throw new Error(`GitHub workflow dispatch failed (${response.status}): ${detail}`);
+  }
+  return `https://github.com/${repository}/actions`;
+}
 
 /**
  * Queue a native build. Privileged: the browser never dispatches GitHub
@@ -20,10 +52,12 @@ type QueueBuildInput = {
  */
 export const queueBuild = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: QueueBuildInput) => {
+  .validator((input: QueueBuildInput) => {
     if (!input?.appId) throw new Error("An app must be selected.");
     if (!["ios", "android", "all"].includes(input.platform)) throw new Error("Invalid platform.");
-    if (!["internal", "production"].includes(input.destination)) throw new Error("Invalid destination.");
+    if (input.sourceSha && !/^[0-9a-fA-F]{7,40}$/.test(input.sourceSha.trim())) {
+      throw new Error("Commit SHA must contain 7–40 hexadecimal characters.");
+    }
     return input;
   })
   .handler(async ({ data, context }) => {
@@ -50,19 +84,13 @@ export const queueBuild = createServerFn({ method: "POST" })
       throw new Error("Only an owner or release owner may queue builds.");
     }
 
-    if (data.destination === "production") {
-      if ((data.releaseOwnerConfirmation ?? "").trim().toUpperCase() !== "RELEASE") {
-        throw new Error("Production requires an explicit release-owner confirmation.");
-      }
-    }
-
     const { data: job, error } = await supabase
       .from("native_build_jobs")
       .insert({
         app_id: app.id,
         org_id: app.org_id,
         platform: data.platform,
-        destination: data.destination,
+        destination: "internal",
         submit_to_internal: data.submitToInternal,
         upload_metadata: data.uploadMetadata,
         source_sha: data.sourceSha?.trim() || null,
@@ -74,17 +102,147 @@ export const queueBuild = createServerFn({ method: "POST" })
 
     if (error) throw new Error(error.message);
 
+    let runnerUrl = "";
+    try {
+      runnerUrl = await dispatchWorkflow("build-app.yml", {
+        app_slug: app.slug,
+        control_plane_job_id: job.id,
+        platform: data.platform,
+        submit: data.submitToInternal ? "true" : "false",
+        metadata: data.uploadMetadata ? "true" : "false",
+        source_sha: data.sourceSha?.trim() ?? "",
+      });
+      await supabase.from("native_build_jobs").update({ runner_url: runnerUrl }).eq("id", job.id);
+    } catch (dispatchError) {
+      await supabase
+        .from("native_build_jobs")
+        .update({
+          status: "failed",
+          finished_at: new Date().toISOString(),
+          failure_summary:
+            dispatchError instanceof Error ? dispatchError.message : "Dispatch failed",
+        })
+        .eq("id", job.id);
+      throw dispatchError;
+    }
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin.from("audit_events").insert({
       org_id: app.org_id,
       actor_id: userId,
       actor_email: (context.claims as { email?: string } | null)?.email ?? "",
-      action: data.destination === "production" ? "build.queued.production" : "build.queued.internal",
+      action: "build.queued.internal",
       target: `${app.slug} · ${data.platform}`,
-      detail: { job_id: job.id, upload_metadata: data.uploadMetadata },
+      detail: { job_id: job.id, upload_metadata: data.uploadMetadata, runner_url: runnerUrl },
     });
 
-    return { jobId: job.id as string };
+    return { jobId: job.id as string, runnerUrl };
+  });
+
+type SubmitTestedBuildInput = {
+  appId: string;
+  platform: "ios" | "android";
+  testedBuildNumber: number;
+  sourceSha: string;
+  qaNotes: string;
+  confirmation: string;
+};
+
+/** Submit the exact build that passed QA; this never creates a replacement binary. */
+export const submitTestedBuild = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((input: SubmitTestedBuildInput) => {
+    if (!input?.appId) throw new Error("An app must be selected.");
+    if (!["ios", "android"].includes(input.platform)) throw new Error("Invalid platform.");
+    if (!Number.isInteger(input.testedBuildNumber) || input.testedBuildNumber < 1) {
+      throw new Error("Enter the exact positive TestFlight build number or Play version code.");
+    }
+    if (!/^[0-9a-fA-F]{7,40}$/.test(input.sourceSha.trim())) {
+      throw new Error("Enter the tested source commit SHA.");
+    }
+    if (input.qaNotes.trim().length < 20) {
+      throw new Error("Add meaningful real-device QA evidence (at least 20 characters).");
+    }
+    return input;
+  })
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: app, error: appError } = await supabase
+      .from("native_apps")
+      .select("id, slug, org_id, active")
+      .eq("id", data.appId)
+      .maybeSingle();
+    if (appError) throw new Error(appError.message);
+    if (!app || !app.active) throw new Error("Unknown or inactive app.");
+
+    const { data: membership } = await supabase
+      .from("organisation_members")
+      .select("role")
+      .eq("org_id", app.org_id)
+      .eq("user_id", userId)
+      .maybeSingle();
+    const role = membership?.role as Role | undefined;
+    if (!role || !["owner", "release_owner"].includes(role)) {
+      throw new Error("Only an owner or release owner may submit tested builds.");
+    }
+    if (data.confirmation.trim() !== `SUBMIT ${app.slug}`) {
+      throw new Error(`Confirmation must be exactly: SUBMIT ${app.slug}`);
+    }
+
+    const { data: approval, error: approvalError } = await supabase
+      .from("native_release_approvals")
+      .insert({
+        app_id: app.id,
+        org_id: app.org_id,
+        platform: data.platform,
+        tested_build_number: data.testedBuildNumber,
+        source_sha: data.sourceSha.trim(),
+        qa_notes: data.qaNotes.trim(),
+        confirmation: data.confirmation.trim(),
+        status: "approved",
+        approved_by: userId,
+      })
+      .select("id")
+      .single();
+    if (approvalError) throw new Error(approvalError.message);
+
+    let runnerUrl = "";
+    try {
+      runnerUrl = await dispatchWorkflow("promote-approved-build.yml", {
+        app_slug: app.slug,
+        approval_id: approval.id,
+        platform: data.platform,
+        tested_build_number: String(data.testedBuildNumber),
+        source_sha: data.sourceSha.trim(),
+        qa_notes: data.qaNotes.trim(),
+        confirmation: data.confirmation.trim(),
+      });
+      await supabase
+        .from("native_release_approvals")
+        .update({ workflow_dispatch_at: new Date().toISOString(), workflow_url: runnerUrl })
+        .eq("id", approval.id);
+    } catch (dispatchError) {
+      await supabase
+        .from("native_release_approvals")
+        .update({ status: "dispatch_failed" })
+        .eq("id", approval.id);
+      throw dispatchError;
+    }
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("audit_events").insert({
+      org_id: app.org_id,
+      actor_id: userId,
+      actor_email: (context.claims as { email?: string } | null)?.email ?? "",
+      action: "release.tested_build.submitted",
+      target: `${app.slug} · ${data.platform} · ${data.testedBuildNumber}`,
+      detail: {
+        approval_id: approval.id,
+        source_sha: data.sourceSha.trim(),
+        runner_url: runnerUrl,
+      },
+    });
+    return { approvalId: approval.id as string, runnerUrl };
   });
 
 type PlanDecisionInput = {
@@ -95,7 +253,7 @@ type PlanDecisionInput = {
 /** Approve or supersede a plan version. Product owners and owners only. */
 export const decidePlan = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: PlanDecisionInput) => {
+  .validator((input: PlanDecisionInput) => {
     if (!input?.planId) throw new Error("A plan must be selected.");
     if (!["approved", "superseded"].includes(input.status)) throw new Error("Invalid decision.");
     return input;
@@ -158,8 +316,9 @@ type RecordEventInput = {
 /** Write an audit event for a member action performed in the browser. */
 export const recordAuditEvent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: RecordEventInput) => {
-    if (!input?.orgId || !input?.action) throw new Error("An organisation and action are required.");
+  .validator((input: RecordEventInput) => {
+    if (!input?.orgId || !input?.action)
+      throw new Error("An organisation and action are required.");
     return input;
   })
   .handler(async ({ data, context }) => {

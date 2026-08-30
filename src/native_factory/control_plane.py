@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import urllib.error
+import urllib.parse
 import urllib.request
 from dataclasses import asdict
 from typing import Any
@@ -30,10 +31,10 @@ class SupabaseControlPlane:
         return None
 
     def _request(
-        self, method: str, table: str, payload: Any, *, query: str = ""
+        self, method: str, table: str, payload: Any | None = None, *, query: str = ""
     ) -> Any:
         endpoint = f"{self.url}/rest/v1/{table}{query}"
-        data = json.dumps(payload).encode("utf-8")
+        data = json.dumps(payload).encode("utf-8") if payload is not None else None
         request = urllib.request.Request(
             endpoint,
             data=data,
@@ -59,10 +60,9 @@ class SupabaseControlPlane:
         payload = {
             "slug": app.suite,
             "name": app.store.brand_name or app.suite.replace("-", " ").title(),
-            "legal_owner": app.store.legal_owner,
         }
         result = self._request(
-            "POST", "native_organizations", payload, query="?on_conflict=slug"
+            "POST", "organisations", payload, query="?on_conflict=slug"
         )
         if not isinstance(result, list) or not result or not result[0].get("id"):
             raise ConfigError("Supabase did not return the organisation ID")
@@ -72,7 +72,7 @@ class SupabaseControlPlane:
         organization = self.upsert_organization(app)
         payload = {
             "slug": app.slug,
-            "organization_id": organization["id"],
+            "org_id": organization["id"],
             "suite": app.suite,
             "app_role": app.app_role,
             "display_name": app.native.display_name,
@@ -83,6 +83,13 @@ class SupabaseControlPlane:
             "ios_bundle_id": app.native.ios_bundle_id,
             "android_package": app.native.android_package,
             "credential_scope": app.slug,
+            "legal_owner": app.store.legal_owner,
+            "public_brand": app.store.brand_name,
+            "support_url": app.store.support_url,
+            "privacy_url": app.store.privacy_url,
+            "apple_team_id": app.store.apple_team_id,
+            "apple_app_id": app.store.apple_app_id,
+            "google_developer_name": app.store.google_developer_name,
             "manifest": asdict(app),
             "store_record": asdict(app.store),
             "active": True,
@@ -95,23 +102,56 @@ class SupabaseControlPlane:
     def save_plan(
         self, slug: str, *, prompt: str, plan: str, status: str = "draft"
     ) -> Any:
+        apps = self._request(
+            "GET",
+            "native_apps",
+            query=f"?slug=eq.{urllib.parse.quote(slug)}&select=id,org_id",
+        )
+        if not isinstance(apps, list) or not apps:
+            raise ConfigError(f"Native app {slug!r} is not present in Supabase")
+        app = apps[0]
+        existing = self._request(
+            "GET",
+            "native_app_plans",
+            query=(
+                f"?app_id=eq.{app['id']}&select=version&order=version.desc&limit=1"
+            ),
+        )
+        version = int(existing[0]["version"]) + 1 if existing else 1
         return self._request(
             "POST",
             "native_app_plans",
-            {"app_slug": slug, "prompt": prompt, "plan_markdown": plan, "status": status},
+            {
+                "app_id": app["id"],
+                "org_id": app["org_id"],
+                "version": version,
+                "prompt": prompt,
+                "plan_markdown": plan,
+                "status": status,
+            },
         )
 
     def create_build_job(
         self, slug: str, platform: str, *, submit: bool, metadata: bool
     ) -> Any:
-        # The SQL helper resolves the slug and keeps the public API free of internal UUIDs.
+        apps = self._request(
+            "GET",
+            "native_apps",
+            query=f"?slug=eq.{urllib.parse.quote(slug)}&select=id,org_id,active",
+        )
+        if not isinstance(apps, list) or not apps or not apps[0].get("active"):
+            raise ConfigError(f"Unknown or inactive app: {slug}")
+        app = apps[0]
         return self._request(
             "POST",
-            "rpc/queue_native_build",
+            "native_build_jobs",
             {
-                "target_slug": slug,
-                "target_platform": platform,
-                "should_submit": submit,
-                "should_upload_metadata": metadata,
+                "app_id": app["id"],
+                "org_id": app["org_id"],
+                "platform": platform,
+                "destination": "internal",
+                "submit_to_internal": submit,
+                "upload_metadata": metadata,
+                "status": "queued",
             },
         )

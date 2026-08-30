@@ -100,20 +100,49 @@ class NativeFactory:
                     "GIT_CONFIG_KEY_0": "http.https://github.com/.extraheader",
                     "GIT_CONFIG_VALUE_0": f"AUTHORIZATION: basic {authorization}",
                 }
-            self.runner.run(
-                [
-                    "git",
-                    "clone",
-                    "--depth",
-                    "1",
-                    "--branch",
-                    app.source.ref,
-                    app.source.repo,
-                    str(destination),
-                ],
-                cwd=destination.parent,
-                env=clone_env,
-            )
+            source_sha = os.getenv("FACTORY_SOURCE_SHA", "").strip()
+            if source_sha:
+                if not 7 <= len(source_sha) <= 40 or not all(
+                    character in "0123456789abcdefABCDEF" for character in source_sha
+                ):
+                    raise ConfigError("FACTORY_SOURCE_SHA must be a Git commit SHA")
+                self.runner.run(
+                    [
+                        "git",
+                        "clone",
+                        "--filter=blob:none",
+                        "--no-checkout",
+                        app.source.repo,
+                        str(destination),
+                    ],
+                    cwd=destination.parent,
+                    env=clone_env,
+                )
+                self.runner.run(
+                    ["git", "fetch", "--depth", "1", "origin", source_sha],
+                    cwd=destination,
+                    env=clone_env,
+                )
+                self.runner.run(
+                    ["git", "checkout", "--detach", source_sha],
+                    cwd=destination,
+                    env=clone_env,
+                )
+            else:
+                self.runner.run(
+                    [
+                        "git",
+                        "clone",
+                        "--depth",
+                        "1",
+                        "--branch",
+                        app.source.ref,
+                        app.source.repo,
+                        str(destination),
+                    ],
+                    cwd=destination.parent,
+                    env=clone_env,
+                )
 
     def _build_web(self, app: App, source_dir: Path) -> Path:
         self.runner.run(app.source.install_command, cwd=source_dir, shell=True)

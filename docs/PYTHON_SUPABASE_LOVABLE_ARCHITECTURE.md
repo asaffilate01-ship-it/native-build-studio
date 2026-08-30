@@ -14,7 +14,8 @@
 ## Local pilot
 
 1. Create a dedicated Supabase project.
-2. Run `docs/control-plane.sql` in the SQL editor.
+2. Apply every file in `supabase/migrations/` through Lovable Cloud or run
+   `supabase db push`. `docs/control-plane.sql` is only a compatibility pointer.
 3. Copy `.env.example` to `.env` outside version control and set the server values in your Windows PowerShell session.
 4. Start Native Factory Studio.
 5. Configure apps, then press **Sync apps to Supabase**.
@@ -24,15 +25,19 @@
 
 Host the Python control plane on a private service such as Azure Container Apps, Google Cloud Run, Railway or Render. Put `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY` and GitHub App credentials in that host's secret manager. Do not expose the current local Studio directly to the internet; it is intentionally bound to `127.0.0.1`.
 
-The production Lovable UI should:
+The included Lovable UI:
 
 1. Use Supabase Auth with the public project URL and anon/publishable key.
 2. Read only organisation-scoped app, plan and build-status rows allowed by RLS.
-3. Send privileged commands to authenticated Python endpoints.
-4. Let Python verify the signed-in user's organisation/role before syncing apps, calling OpenAI, dispatching GitHub or changing approval status.
+3. Sends build and release commands through authenticated server functions,
+   which dispatch GitHub without exposing the token to the browser.
+4. Keeps configuration validation, manifest generation, OpenAI planning and
+   native orchestration in the Python controller.
 5. Subscribe to build rows for realtime progress.
 
-Before exposing any records, add organisations, memberships and RLS policies appropriate to your tenancy. The starter SQL intentionally creates no anonymous policies.
+The migrations include organisations, memberships and row-level security. Keep
+the service-role key on the Python server only and verify the policies again
+before inviting external client teams.
 
 ## Planning lifecycle
 
@@ -50,9 +55,9 @@ stateDiagram-v2
 
 ChatGPT is a drafting partner, not an approver. Unknown data practices, regulated claims, account ownership, legal text and completed test results stay marked for human confirmation.
 
-## Recommended next production module
+## Optional production worker expansion
 
-Replace the local-only admin transport with an authenticated Python API and worker queue:
+For larger portfolios, add an authenticated hosted Python API and worker queue:
 
 - `POST /v1/apps/{slug}/plans` — create prompt/draft;
 - `POST /v1/apps/{slug}/sync` — validate and sync metadata;
@@ -61,4 +66,3 @@ Replace the local-only admin transport with an authenticated Python API and work
 - `POST /v1/apps/{slug}/approve` — role-gated plan/release approval.
 
 Use idempotency keys for build requests and a GitHub App instead of long-lived personal access tokens once the pilot is proven.
-

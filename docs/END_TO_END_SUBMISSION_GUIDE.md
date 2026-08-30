@@ -18,14 +18,14 @@ This starts with a Lovable SaaS app and finishes with branded Android and iOS bu
 1. Connect the Lovable project to a brand-owned or managed GitHub repository.
 2. Start `START_NATIVE_FACTORY_STUDIO.cmd` on Windows.
 3. Create the app in **Apps & suites**. For multiple role apps, reuse one suite and assign unique permanent IDs, for example:
-   - `haccora-customer` → `uk.co.haccora.customer`
-   - `haccora-driver` → `uk.co.haccora.driver`
-   - `haccora-kitchen` → `uk.co.haccora.kitchen`
+   - `example-customer` → `uk.co.brand.customer`
+   - `example-driver` → `uk.co.brand.driver`
+   - `example-kitchen` → `uk.co.brand.kitchen`
 4. In **Capacitor ready**, generate the brief.
 5. Paste `briefs/<slug>/CAPACITOR_READY_BRIEF.md` into Lovable or ChatGPT. Ask it to implement every item, run a clean build, and commit the result.
 6. Confirm the repository produces `dist/index.html`. Do not commit generated `ios/` or `android/` directories; the factory creates clean native projects per build.
 
-The bundle/package ID is permanent technical identity, not the public seller name. Each brand can own its Apple and Google accounts while using IDs such as `uk.co.haccora.customer`.
+The bundle/package ID is permanent technical identity, not the public seller name. Each brand can own its Apple and Google accounts while using IDs such as `uk.co.brand.customer`.
 
 ## 2. Create the brand developer accounts
 
@@ -37,6 +37,11 @@ The bundle/package ID is permanent technical identity, not the public seller nam
 4. Create the upload keystore once and keep an offline recovery copy.
 5. Create a restricted service account with only the app/release permissions needed by this pipeline, then download its JSON key.
 
+For personal Play developer accounts created after 13 November 2023, internal
+testing is only the first step: Google currently requires a closed test with at
+least 12 opted-in testers for 14 continuous days before production access can
+be requested. Organisation accounts follow their applicable Play Console flow.
+
 ### Apple
 
 1. The brand enrols in the Apple Developer Program as the organisation that should appear as seller.
@@ -45,7 +50,9 @@ The bundle/package ID is permanent technical identity, not the public seller nam
 4. Create a minimum-role App Store Connect API key. Save the Key ID, Issuer ID and downloaded `.p8`.
 5. Create a private Git repository for Fastlane Match signing material.
 
-Apple's public seller/developer name is account-wide. If Haccora must appear as seller, the accepted Haccora legal organisation/trading name must own that account. A Bundle ID does not change seller name.
+Apple's public seller/developer name is account-wide. If a brand must appear as
+seller, its accepted legal organisation/trading name must own that account. A
+Bundle ID does not change the seller name.
 
 ## 3. Complete the submission workspace
 
@@ -66,7 +73,9 @@ These switches prepare the hand-off; they do not replace Apple App Privacy or Go
 3. In **Store access**, select the app and factory repository.
 4. Enter Apple API identifiers, `.p8`, private Match repository/token/password, Android keystore, Play service-account JSON and keystore passwords.
 5. If reviewers require login, add a dedicated review username/password here—not in reviewer notes.
-6. Press **Send secrets to GitHub**.
+6. Add the control-plane Supabase URL and service-role key if you want completed
+   and failed workflow status returned to the Lovable dashboard.
+7. Press **Send secrets to GitHub**.
 
 Studio sends secret values directly to the app-specific GitHub Environment. It does not store them in `apps.yml`, Studio settings or hand-off files.
 
@@ -102,8 +111,11 @@ New plugins, permissions, native SDKs, icons, launch screens, IDs and review-sig
 2. Verify artwork, copy and claims match the tested build.
 3. Complete Apple App Privacy and Play Data Safety from actual production behaviour.
 4. Supply a permanent reviewer account when login is required.
-5. Select the tested build in App Store Connect and submit for review.
-6. Promote the Play internal release using a staged rollout.
+5. In **Builds & output**, enter the exact TestFlight build number or Play
+   version code, tested commit SHA and real-device QA evidence.
+6. Type `SUBMIT <app-slug>`. The protected workflow selects that existing build,
+   submits it to Apple review or promotes it from Play internal testing using a
+   staged rollout. It does not compile a replacement binary.
 7. Monitor crashes, auth, API health and reviews; keep release/rollback ownership explicit.
 
 ## Windows-compatible Mac choices

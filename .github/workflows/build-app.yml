@@ -23,6 +23,14 @@ on:
         required: true
         type: boolean
         default: false
+      source_sha:
+        description: Exact source commit to build; blank uses the configured branch head
+        required: false
+        type: string
+      control_plane_job_id:
+        description: Supabase build job UUID; blank for direct/manual runs
+        required: false
+        type: string
   repository_dispatch:
     types: [lovable-app-updated]
 
@@ -40,6 +48,8 @@ jobs:
       platform: ${{ steps.app.outputs.platform }}
       submit: ${{ steps.app.outputs.submit }}
       metadata: ${{ steps.app.outputs.metadata }}
+      source_sha: ${{ steps.app.outputs.source_sha }}
+      control_plane_job_id: ${{ steps.app.outputs.control_plane_job_id }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -52,6 +62,8 @@ jobs:
           BUILD_PLATFORM: ${{ inputs.platform || github.event.client_payload.platform || 'all' }}
           SHOULD_SUBMIT: ${{ inputs.submit || github.event.client_payload.submit || 'false' }}
           SHOULD_UPLOAD_METADATA: ${{ inputs.metadata || github.event.client_payload.metadata || 'false' }}
+          SOURCE_SHA: ${{ inputs.source_sha || github.event.client_payload.source_sha || '' }}
+          CONTROL_PLANE_JOB_ID: ${{ inputs.control_plane_job_id || github.event.client_payload.control_plane_job_id || '' }}
         run: |
           native-factory validate
           metadata="$(native-factory metadata "$APP_SLUG")"
@@ -61,6 +73,8 @@ jobs:
           echo "platform=$BUILD_PLATFORM" >> "$GITHUB_OUTPUT"
           echo "submit=$SHOULD_SUBMIT" >> "$GITHUB_OUTPUT"
           echo "metadata=$SHOULD_UPLOAD_METADATA" >> "$GITHUB_OUTPUT"
+          echo "source_sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
+          echo "control_plane_job_id=$CONTROL_PLANE_JOB_ID" >> "$GITHUB_OUTPUT"
 
   capacitor:
     needs: inspect
@@ -90,6 +104,7 @@ jobs:
         env:
           APPLE_KEY_ID: ${{ secrets.APPLE_KEY_ID }}
           FACTORY_CI_RUN_NUMBER: ${{ github.run_number }}
+          FACTORY_SOURCE_SHA: ${{ needs.inspect.outputs.source_sha }}
           SOURCE_REPO_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN }}
           APPLE_ISSUER_ID: ${{ secrets.APPLE_ISSUER_ID }}
           APPLE_PRIVATE_KEY_B64: ${{ secrets.APPLE_PRIVATE_KEY_B64 }}
@@ -107,6 +122,23 @@ jobs:
           --platform "${{ needs.inspect.outputs.platform }}"
           ${{ needs.inspect.outputs.submit == 'true' && '--submit' || '' }}
           ${{ needs.inspect.outputs.metadata == 'true' && '--metadata' || '' }}
+      - name: Report control-plane result
+        if: always() && needs.inspect.outputs.control_plane_job_id != ''
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          CONTROL_PLANE_JOB_ID: ${{ needs.inspect.outputs.control_plane_job_id }}
+          JOB_STATUS: ${{ job.status }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          status=succeeded
+          [ "$JOB_STATUS" = "success" ] || status=failed
+          curl --fail-with-body --request PATCH \
+            "$SUPABASE_URL/rest/v1/native_build_jobs?id=eq.$CONTROL_PLANE_JOB_ID" \
+            --header "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            --header "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            --header "Content-Type: application/json" \
+            --data "{\"status\":\"$status\",\"runner_job_id\":\"$GITHUB_RUN_ID\",\"runner_url\":\"$RUN_URL\",\"finished_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -143,6 +175,7 @@ jobs:
         env:
           APPLE_KEY_ID: ${{ secrets.APPLE_KEY_ID }}
           FACTORY_CI_RUN_NUMBER: ${{ github.run_number }}
+          FACTORY_SOURCE_SHA: ${{ needs.inspect.outputs.source_sha }}
           SOURCE_REPO_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN }}
           APPLE_ISSUER_ID: ${{ secrets.APPLE_ISSUER_ID }}
           APPLE_PRIVATE_KEY_B64: ${{ secrets.APPLE_PRIVATE_KEY_B64 }}
@@ -160,6 +193,23 @@ jobs:
           --platform "${{ needs.inspect.outputs.platform }}"
           ${{ needs.inspect.outputs.submit == 'true' && '--submit' || '' }}
           ${{ needs.inspect.outputs.metadata == 'true' && '--metadata' || '' }}
+      - name: Report control-plane result
+        if: always() && needs.inspect.outputs.control_plane_job_id != ''
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          CONTROL_PLANE_JOB_ID: ${{ needs.inspect.outputs.control_plane_job_id }}
+          JOB_STATUS: ${{ job.status }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          status=succeeded
+          [ "$JOB_STATUS" = "success" ] || status=failed
+          curl --fail-with-body --request PATCH \
+            "$SUPABASE_URL/rest/v1/native_build_jobs?id=eq.$CONTROL_PLANE_JOB_ID" \
+            --header "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            --header "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            --header "Content-Type: application/json" \
+            --data "{\"status\":\"$status\",\"runner_job_id\":\"$GITHUB_RUN_ID\",\"runner_url\":\"$RUN_URL\",\"finished_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -189,8 +239,26 @@ jobs:
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
           FACTORY_CI_RUN_NUMBER: ${{ github.run_number }}
+          FACTORY_SOURCE_SHA: ${{ needs.inspect.outputs.source_sha }}
           SOURCE_REPO_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN }}
         run: >-
           native-factory build "${{ needs.inspect.outputs.slug }}"
           --platform "${{ needs.inspect.outputs.platform }}"
           ${{ needs.inspect.outputs.submit == 'true' && '--submit' || '' }}
+      - name: Report control-plane result
+        if: always() && needs.inspect.outputs.control_plane_job_id != ''
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          CONTROL_PLANE_JOB_ID: ${{ needs.inspect.outputs.control_plane_job_id }}
+          JOB_STATUS: ${{ job.status }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          status=succeeded
+          [ "$JOB_STATUS" = "success" ] || status=failed
+          curl --fail-with-body --request PATCH \
+            "$SUPABASE_URL/rest/v1/native_build_jobs?id=eq.$CONTROL_PLANE_JOB_ID" \
+            --header "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            --header "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            --header "Content-Type: application/json" \
+            --data "{\"status\":\"$status\",\"runner_job_id\":\"$GITHUB_RUN_ID\",\"runner_url\":\"$RUN_URL\",\"finished_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}"

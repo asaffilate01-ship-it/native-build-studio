@@ -30,7 +30,7 @@ platform :android do
         package_name: ENV.fetch("ANDROID_PACKAGE"),
         aab: aab,
         track: ENV.fetch("PLAY_TRACK", "internal"),
-        release_status: "draft",
+        release_status: "completed",
         metadata_path: "fastlane/metadata",
         skip_upload_metadata: !upload_metadata,
         skip_upload_images: !upload_metadata,

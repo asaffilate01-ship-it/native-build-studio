@@ -12,7 +12,8 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "Native Factory Control Plane" },
       {
         property: "og:description",
-        content: "From Capacitor readiness to TestFlight and Play Internal Testing, with auditable approvals.",
+        content:
+          "From Capacitor readiness to TestFlight and Play Internal Testing, with auditable approvals.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -57,12 +58,13 @@ function Landing() {
             Native Factory Control Plane
           </p>
           <h1 className="text-4xl font-semibold leading-tight sm:text-5xl">
-            One web codebase. Branded Android and iOS builds in testing, ready for a human to submit.
+            One web codebase. Branded Android and iOS builds in testing, ready for a human to
+            submit.
           </h1>
           <p className="text-lg text-muted-foreground">
-            Track readiness, permanent identifiers, store listings, signed builds and update delivery for
-            every role app in your suite — with organisation-scoped access and an audit record behind each
-            privileged action.
+            Track readiness, permanent identifiers, store listings, signed builds and update
+            delivery for every role app in your suite — with organisation-scoped access and an audit
+            record behind each privileged action.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
@@ -99,13 +101,14 @@ function Landing() {
             Permanent identity, per role
           </h2>
           <p className="text-sm text-muted-foreground">
-            Reuse one suite and assign a unique, permanent identifier to each role app. The bundle or package
-            ID is technical identity — it is not the public seller name, which is account-wide.
+            Reuse one suite and assign a unique, permanent identifier to each role app. The bundle
+            or package ID is technical identity — it is not the public seller name, which is
+            account-wide.
           </p>
           <ul className="space-y-1 text-sm">
-            <li className="ident">uk.co.haccora.customer</li>
-            <li className="ident">uk.co.haccora.driver</li>
-            <li className="ident">uk.co.haccora.kitchen</li>
+            <li className="ident">uk.co.brand.customer</li>
+            <li className="ident">uk.co.brand.driver</li>
+            <li className="ident">uk.co.brand.kitchen</li>
           </ul>
         </section>
       </div>

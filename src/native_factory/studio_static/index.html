@@ -31,7 +31,7 @@
 
     <main>
       <header class="topbar">
-        <div><p class="eyebrow">iTechLounge build control</p><h1 id="page-title">Portfolio overview</h1></div>
+        <div><p class="eyebrow">Multi-brand native build control</p><h1 id="page-title">Portfolio overview</h1></div>
         <button class="primary compact" data-go="apps">+ Configure app</button>
       </header>
 
@@ -81,7 +81,7 @@
               <div class="form-grid">
                 <label>Project organisation <input name="suite" id="suite" placeholder="your-product" required><small>One organisation containing Customer, Kitchen, Driver, etc.</small></label>
                 <label>App role <input name="app_role" id="app-role" value="main" placeholder="customer"></label>
-                <label>App display name <input name="display_name" id="display-name" placeholder="Haccora" required></label>
+                <label>App display name <input name="display_name" id="display-name" placeholder="Example Customer" required></label>
                 <label>App slug <input name="slug" id="slug" placeholder="your-product-customer" required pattern="[a-z0-9-]+"></label>
                 <label>Brand domain <input id="brand-domain" placeholder="yourproduct.co.uk"><small>Used only to suggest the ID.</small></label>
                 <label>Permanent app ID <div class="input-action"><input name="app_id" id="app-id" placeholder="uk.co.yourproduct.customer" required><button type="button" id="suggest-id">Suggest</button></div><small>Same Bundle ID and Android package.</small></label>
@@ -115,9 +115,9 @@
           <div class="form-card">
             <div class="card-number">5</div><div class="card-content"><h3>Store listing details</h3><p>These are non-secret records used for readiness and handover.</p>
               <div class="form-grid">
-                <label>Public brand name <input name="brand_name" id="brand-name" placeholder="Haccora"></label>
-                <label>Legal owner <input name="legal_owner" id="legal-owner" placeholder="iTechLounge Ltd"></label>
-                <label>Google developer name <input name="google_developer_name" id="google-name" placeholder="Haccora"></label>
+                <label>Public brand name <input name="brand_name" id="brand-name" placeholder="Example Brand"></label>
+                <label>Legal owner <input name="legal_owner" id="legal-owner" placeholder="Example Brand Ltd"></label>
+                <label>Google developer name <input name="google_developer_name" id="google-name" placeholder="Example Brand"></label>
                 <label>Apple Team ID <input name="apple_team_id" id="apple-team" placeholder="Optional until enrolled"></label>
                 <label>Apple App Store ID <input name="apple_app_id" id="apple-app-id" placeholder="Numeric ID after app creation"></label>
                 <label class="wide">Support URL <input type="url" name="support_url" id="support-url" placeholder="https://yourproduct.co.uk/support"></label>
@@ -190,6 +190,7 @@
           <div class="form-card"><div class="card-number">G</div><div class="card-content"><h3>Private source access</h3><div class="form-grid"><label class="wide">Read-only Lovable repository token <input type="password" name="source_repo_token" autocomplete="new-password"><small>Optional for a public source repository.</small></label></div></div></div>
           <div class="form-card"><div class="card-number">R</div><div class="card-content"><h3>Store reviewer login</h3><p>Only needed when reviewers cannot use the app without signing in. Stored as protected GitHub secrets.</p><div class="form-grid"><label>Reviewer username<input name="review_username" autocomplete="off"></label><label>Reviewer password<input type="password" name="review_password" autocomplete="new-password"></label></div></div></div>
           <div class="form-card"><div class="card-number">L</div><div class="card-content"><h3>Optional Appflow live updates</h3><p>Use only after the app is configured in Ionic Appflow and its GitHub repository is connected.</p><div class="form-grid"><label class="wide">Ionic access token<input type="password" name="ionic_token" autocomplete="new-password"><small>Stored as IONIC_TOKEN. Native/plugin changes still require a signed store build.</small></label></div></div></div>
+          <div class="form-card"><div class="card-number">S</div><div class="card-content"><h3>Build status callback</h3><p>Optional, but required for the Lovable dashboard to receive completed/failed workflow status.</p><div class="form-grid"><label class="wide">Supabase project URL<input type="url" name="callback_supabase_url" autocomplete="off"></label><label class="wide">Supabase service-role key<input type="password" name="callback_supabase_service_role_key" autocomplete="new-password"><small>Sent directly to the selected GitHub Environments; never written to the app manifest.</small></label></div></div></div>
           <div class="sticky-submit"><div><strong>Secure transfer</strong><small>Empty fields leave existing GitHub secrets unchanged.</small></div><button class="primary" type="submit">Send secrets to GitHub</button></div>
         </form>
       </section>

@@ -395,6 +395,10 @@ class StudioServices:
             "REVIEW_USERNAME": request.form.get("review_username", ""),
             "REVIEW_PASSWORD": request.form.get("review_password", ""),
             "IONIC_TOKEN": request.form.get("ionic_token", ""),
+            "SUPABASE_URL": request.form.get("callback_supabase_url", ""),
+            "SUPABASE_SERVICE_ROLE_KEY": request.form.get(
+                "callback_supabase_service_role_key", ""
+            ),
         }
         secret_files = {
             "APPLE_PRIVATE_KEY_B64": self._validated_secret_file(
@@ -629,10 +633,11 @@ jobs:
           for app_slug in $APP_SLUGS; do
             gh api --method POST "repos/$FACTORY_REPO/dispatches" \\
               --field event_type=lovable-app-updated \\
-              --raw-field "client_payload[app_slug]=$app_slug" \\
-              --raw-field "client_payload[platform]=all" \\
-              --raw-field "client_payload[submit]={'true' if auto_submit else 'false'}" \
-              --raw-field "client_payload[metadata]={'true' if upload_metadata else 'false'}"
+	              --raw-field "client_payload[app_slug]=$app_slug" \\
+	              --raw-field "client_payload[platform]=all" \\
+	              --raw-field "client_payload[source_sha]=$GITHUB_SHA" \\
+	              --raw-field "client_payload[submit]={'true' if auto_submit else 'false'}" \\
+	              --raw-field "client_payload[metadata]={'true' if upload_metadata else 'false'}"
           done
 '''
 

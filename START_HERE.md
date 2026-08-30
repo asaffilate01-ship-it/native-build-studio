@@ -17,7 +17,7 @@ opens the factory at `http://127.0.0.1:8787`.
 ## What you need for each app
 
 - Lovable GitHub repository and its working build command.
-- Permanent brand-based app ID such as `uk.co.haccora.app`.
+- Permanent brand-based app ID such as `uk.co.brand.customer`.
 - 1024 × 1024 PNG icon.
 - 2732 × 2732 PNG splash source.
 - Privacy, support and account-deletion URLs.

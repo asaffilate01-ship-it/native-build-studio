@@ -40,7 +40,8 @@ fail store minimum-functionality review.
 - Per-brand secrets through GitHub Environments; keys never appear in YAML or
   command-line arguments.
 - Manual and `repository_dispatch` GitHub Actions triggers.
-- A metadata-only Supabase schema for a later admin dashboard and build queue.
+- A production-shaped Supabase schema for organisations, apps, plans, listings,
+  delivery mappings, build jobs, audit events and tested-build approvals.
 - Dry-run plans and unit tests.
 - One-command Lovable onboarding, web-bundle checks, readiness checks and
   build-machine diagnostics.
@@ -62,7 +63,7 @@ assets/<slug>/                  icon, splash and app-specific mobile config
 src/native_factory/            Python controller
 templates/capacitor/            clean reusable native shell
 .github/workflows/build-app.yml Hosted Mac, Mac mini and EAS jobs
-docs/control-plane.sql          optional dashboard/job metadata
+supabase/migrations/            authoritative dashboard/job schema and RLS
 docs/PYTHON_SUPABASE_LOVABLE_ARCHITECTURE.md hosted control-plane design
 ```
 
@@ -77,16 +78,16 @@ source .venv/bin/activate
 pip install -e '.[dev]'
 cp config/apps.example.yml config/apps.yml
 native-factory validate
-native-factory readiness haccora --platform all --submit
-native-factory plan haccora --platform all
+native-factory readiness example-customer --platform all --submit
+native-factory plan example-customer --platform all
 native-factory studio
 ```
 
 After adding real repository and asset paths:
 
 ```bash
-native-factory build haccora --platform all
-native-factory build haccora --platform all --submit
+native-factory build example-customer --platform all
+native-factory build example-customer --platform all --submit
 ```
 
 `build` creates binaries. `--submit` uploads the iOS build to TestFlight and
@@ -109,9 +110,9 @@ Capacitor uses one `appId`, so this starter requires the iOS bundle ID and
 Android package to be identical. An existing released app must retain its
 original identifier and signing identity forever.
 
-Use brand-based IDs such as `uk.co.haccora.app`. When a suite has distinct
-installed role apps, use unique IDs such as `uk.co.haccora.kitchen` and
-`uk.co.haccora.inspector`. The factory injects the role into the web build as
+Use brand-based IDs such as `uk.co.brand.customer`. When a suite has distinct
+installed role apps, use unique IDs such as `uk.co.brand.kitchen` and
+`uk.co.brand.driver`. The factory injects the role into the web build as
 `VITE_NATIVE_APP_ROLE` and `window.__NATIVE_FACTORY__.role`.
 
 Production Capacitor builds embed the compiled `dist` files by default. A
@@ -139,6 +140,8 @@ environment can reuse the same secret names while holding different values:
 | `ANDROID_KEY_PASSWORD` | Upload key password |
 | `EXPO_TOKEN` | Only for an Expo/EAS app |
 | `SOURCE_REPO_TOKEN` | Read-only access to private Lovable source repositories |
+| `SUPABASE_URL` | Control-plane project URL for build status callbacks |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-only callback key; never expose to Lovable client code |
 
 Set the non-secret Environment variable `MATCH_READONLY=false` for the first
 controlled Match bootstrap only, then change it to `true`.
@@ -189,7 +192,7 @@ pass:
 {
   "event_type": "lovable-app-updated",
   "client_payload": {
-    "app_slug": "haccora",
+    "app_slug": "example-customer",
     "platform": "all",
     "submit": false
   }
