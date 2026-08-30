@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedBuildsRouteImport } from './routes/_authenticated/builds'
 import { Route as AuthenticatedListingRouteImport } from './routes/_authenticated/listing'
 import { Route as AuthenticatedPlannerRouteImport } from './routes/_authenticated/planner'
 import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
@@ -30,6 +31,11 @@ const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedBuildsRoute = AuthenticatedBuildsRouteImport.update({
+  id: '/builds',
+  path: '/builds',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedListingRoute = AuthenticatedListingRouteImport.update({
   id: '/listing',
@@ -55,6 +61,7 @@ const AuthenticatedReadinessRoute = AuthenticatedReadinessRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/builds': typeof AuthenticatedBuildsRoute
   '/listing': typeof AuthenticatedListingRoute
   '/planner': typeof AuthenticatedPlannerRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
@@ -63,6 +70,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/builds': typeof AuthenticatedBuildsRoute
   '/listing': typeof AuthenticatedListingRoute
   '/planner': typeof AuthenticatedPlannerRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
@@ -73,6 +81,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/builds': typeof AuthenticatedBuildsRoute
   '/_authenticated/listing': typeof AuthenticatedListingRoute
   '/_authenticated/planner': typeof AuthenticatedPlannerRoute
   '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
@@ -81,14 +90,28 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/auth' | '/listing' | '/planner' | '/portfolio' | '/readiness'
+    | '/'
+    | '/auth'
+    | '/builds'
+    | '/listing'
+    | '/planner'
+    | '/portfolio'
+    | '/readiness'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/listing' | '/planner' | '/portfolio' | '/readiness'
+  to:
+    | '/'
+    | '/auth'
+    | '/builds'
+    | '/listing'
+    | '/planner'
+    | '/portfolio'
+    | '/readiness'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/builds'
     | '/_authenticated/listing'
     | '/_authenticated/planner'
     | '/_authenticated/portfolio'
@@ -124,6 +147,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/builds': {
+      id: '/_authenticated/builds'
+      path: '/builds'
+      fullPath: '/builds'
+      preLoaderRoute: typeof AuthenticatedBuildsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/listing': {
       id: '/_authenticated/listing'
       path: '/listing'
@@ -156,6 +186,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedBuildsRoute: typeof AuthenticatedBuildsRoute
   AuthenticatedListingRoute: typeof AuthenticatedListingRoute
   AuthenticatedPlannerRoute: typeof AuthenticatedPlannerRoute
   AuthenticatedPortfolioRoute: typeof AuthenticatedPortfolioRoute
@@ -163,6 +194,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedBuildsRoute: AuthenticatedBuildsRoute,
   AuthenticatedListingRoute: AuthenticatedListingRoute,
   AuthenticatedPlannerRoute: AuthenticatedPlannerRoute,
   AuthenticatedPortfolioRoute: AuthenticatedPortfolioRoute,
