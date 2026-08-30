@@ -1,0 +1,53 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Create an App Store IPA and optionally upload it"
+  lane :release do
+    api_key = app_store_connect_api_key(
+      key_id: ENV.fetch("APPLE_KEY_ID"),
+      issuer_id: ENV.fetch("APPLE_ISSUER_ID"),
+      key_filepath: ENV.fetch("APPLE_KEY_FILE")
+    )
+
+    increment_version_number(version_number: ENV.fetch("APP_VERSION"), xcodeproj: "App/App.xcodeproj")
+    increment_build_number(build_number: ENV.fetch("BUILD_NUMBER"), xcodeproj: "App/App.xcodeproj")
+
+    match_options = {
+      type: "appstore",
+      app_identifier: ENV.fetch("APP_IDENTIFIER"),
+      api_key: api_key,
+      readonly: ENV.fetch("MATCH_READONLY", "true") == "true"
+    }
+    match_options[:team_id] = ENV["APPLE_TEAM_ID"] if ENV["APPLE_TEAM_ID"]
+    match(**match_options)
+
+    build_options = {
+      scheme: "App",
+      export_method: "app-store",
+      output_directory: "../artifacts/ios",
+      clean: true
+    }
+    if ENV.fetch("IOS_PACKAGE_MANAGER", "spm") == "cocoapods"
+      build_options[:workspace] = "App/App.xcworkspace"
+    else
+      build_options[:project] = "App/App.xcodeproj"
+    end
+    build_app(**build_options)
+
+    if ENV.fetch("FACTORY_SUBMIT", "false") == "true"
+      upload_to_testflight(api_key: api_key, skip_waiting_for_build_processing: true)
+    end
+
+    if ENV.fetch("FACTORY_UPLOAD_METADATA", "false") == "true"
+      deliver(
+        api_key: api_key,
+        metadata_path: "fastlane/metadata",
+        screenshots_path: "fastlane/screenshots",
+        skip_binary_upload: true,
+        submit_for_review: false,
+        automatic_release: false,
+        force: true
+      )
+    end
+  end
+end

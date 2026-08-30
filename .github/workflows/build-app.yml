@@ -1,0 +1,196 @@
+name: Build native app
+
+on:
+  workflow_dispatch:
+    inputs:
+      app_slug:
+        description: App slug from config/apps.yml
+        required: true
+        type: string
+      platform:
+        description: Platform to build
+        required: true
+        type: choice
+        options: [all, ios, android]
+        default: all
+      submit:
+        description: Upload to TestFlight/Play internal track
+        required: true
+        type: boolean
+        default: false
+      metadata:
+        description: Upload saved store listing and screenshots (never submits for review)
+        required: true
+        type: boolean
+        default: false
+  repository_dispatch:
+    types: [lovable-app-updated]
+
+concurrency:
+  group: native-${{ inputs.app_slug || github.event.client_payload.app_slug }}
+  cancel-in-progress: false
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    outputs:
+      engine: ${{ steps.app.outputs.engine }}
+      runner: ${{ steps.app.outputs.runner }}
+      slug: ${{ steps.app.outputs.slug }}
+      platform: ${{ steps.app.outputs.platform }}
+      submit: ${{ steps.app.outputs.submit }}
+      metadata: ${{ steps.app.outputs.metadata }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install .
+      - id: app
+        env:
+          APP_SLUG: ${{ inputs.app_slug || github.event.client_payload.app_slug }}
+          BUILD_PLATFORM: ${{ inputs.platform || github.event.client_payload.platform || 'all' }}
+          SHOULD_SUBMIT: ${{ inputs.submit || github.event.client_payload.submit || 'false' }}
+          SHOULD_UPLOAD_METADATA: ${{ inputs.metadata || github.event.client_payload.metadata || 'false' }}
+        run: |
+          native-factory validate
+          metadata="$(native-factory metadata "$APP_SLUG")"
+          echo "engine=$(python -c 'import json,sys; print(json.load(sys.stdin)["engine"])' <<< "$metadata")" >> "$GITHUB_OUTPUT"
+          echo "runner=$(python -c 'import json,sys; print(json.load(sys.stdin)["runner"])' <<< "$metadata")" >> "$GITHUB_OUTPUT"
+          echo "slug=$APP_SLUG" >> "$GITHUB_OUTPUT"
+          echo "platform=$BUILD_PLATFORM" >> "$GITHUB_OUTPUT"
+          echo "submit=$SHOULD_SUBMIT" >> "$GITHUB_OUTPUT"
+          echo "metadata=$SHOULD_UPLOAD_METADATA" >> "$GITHUB_OUTPUT"
+
+  capacitor:
+    needs: inspect
+    if: needs.inspect.outputs.engine == 'capacitor' && needs.inspect.outputs.runner == 'mac'
+    runs-on: [self-hosted, macOS, ARM64, native-factory]
+    environment: ${{ needs.inspect.outputs.slug }}
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+      - run: corepack enable
+      - run: pip install .
+      - name: Build and optionally submit
+        env:
+          APPLE_KEY_ID: ${{ secrets.APPLE_KEY_ID }}
+          FACTORY_CI_RUN_NUMBER: ${{ github.run_number }}
+          SOURCE_REPO_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN }}
+          APPLE_ISSUER_ID: ${{ secrets.APPLE_ISSUER_ID }}
+          APPLE_PRIVATE_KEY_B64: ${{ secrets.APPLE_PRIVATE_KEY_B64 }}
+          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+          MATCH_REPO_TOKEN: ${{ secrets.MATCH_REPO_TOKEN }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_READONLY: ${{ vars.MATCH_READONLY || 'true' }}
+          GOOGLE_SERVICE_ACCOUNT_B64: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_B64 }}
+          ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: >-
+          native-factory build "${{ needs.inspect.outputs.slug }}"
+          --platform "${{ needs.inspect.outputs.platform }}"
+          ${{ needs.inspect.outputs.submit == 'true' && '--submit' || '' }}
+          ${{ needs.inspect.outputs.metadata == 'true' && '--metadata' || '' }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ needs.inspect.outputs.slug }}-native-build
+          path: .factory/work/${{ needs.inspect.outputs.slug }}/wrapper/artifacts/
+          if-no-files-found: warn
+          retention-days: 14
+
+  capacitor-hosted:
+    needs: inspect
+    if: needs.inspect.outputs.engine == 'capacitor' && needs.inspect.outputs.runner == 'github-macos'
+    runs-on: macos-26
+    environment: ${{ needs.inspect.outputs.slug }}
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+      - run: corepack enable
+      - run: pip install .
+      - name: Build and optionally submit
+        env:
+          APPLE_KEY_ID: ${{ secrets.APPLE_KEY_ID }}
+          FACTORY_CI_RUN_NUMBER: ${{ github.run_number }}
+          SOURCE_REPO_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN }}
+          APPLE_ISSUER_ID: ${{ secrets.APPLE_ISSUER_ID }}
+          APPLE_PRIVATE_KEY_B64: ${{ secrets.APPLE_PRIVATE_KEY_B64 }}
+          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+          MATCH_REPO_TOKEN: ${{ secrets.MATCH_REPO_TOKEN }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_READONLY: ${{ vars.MATCH_READONLY || 'true' }}
+          GOOGLE_SERVICE_ACCOUNT_B64: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_B64 }}
+          ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: >-
+          native-factory build "${{ needs.inspect.outputs.slug }}"
+          --platform "${{ needs.inspect.outputs.platform }}"
+          ${{ needs.inspect.outputs.submit == 'true' && '--submit' || '' }}
+          ${{ needs.inspect.outputs.metadata == 'true' && '--metadata' || '' }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ needs.inspect.outputs.slug }}-hosted-native-build
+          path: .factory/work/${{ needs.inspect.outputs.slug }}/wrapper/artifacts/
+          if-no-files-found: warn
+          retention-days: 14
+
+  expo:
+    needs: inspect
+    if: needs.inspect.outputs.engine == 'expo'
+    runs-on: ubuntu-latest
+    environment: ${{ needs.inspect.outputs.slug }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: oven-sh/setup-bun@v2
+      - run: corepack enable
+      - run: pip install .
+      - name: Queue EAS build
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          FACTORY_CI_RUN_NUMBER: ${{ github.run_number }}
+          SOURCE_REPO_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN }}
+        run: >-
+          native-factory build "${{ needs.inspect.outputs.slug }}"
+          --platform "${{ needs.inspect.outputs.platform }}"
+          ${{ needs.inspect.outputs.submit == 'true' && '--submit' || '' }}

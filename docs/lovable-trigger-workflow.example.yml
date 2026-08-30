@@ -1,0 +1,30 @@
+name: Trigger native build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-and-dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+      - name: Ask the central factory to build this app
+        env:
+          GH_TOKEN: ${{ secrets.FACTORY_DISPATCH_TOKEN }}
+          FACTORY_REPOSITORY: your-org/native-app-factory
+          APP_SLUG: replace-with-app-slug
+        run: |
+          jq -n \
+            --arg slug "$APP_SLUG" \
+            --arg sha "$GITHUB_SHA" \
+            '{event_type:"lovable-app-updated",client_payload:{app_slug:$slug,source_sha:$sha,platform:"all",submit:false}}' \
+          | gh api "repos/$FACTORY_REPOSITORY/dispatches" --method POST --input -
+

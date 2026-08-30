@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Native Factory Studio</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">NF</div>
+        <div><strong>Native Factory</strong><span>Studio</span></div>
+      </div>
+      <nav>
+        <button class="nav-item active" data-panel="overview"><span>01</span>Overview</button>
+        <button class="nav-item" data-panel="brief"><span>02</span>Capacitor ready</button>
+        <button class="nav-item" data-panel="apps"><span>03</span>Apps & suites</button>
+        <button class="nav-item" data-panel="listing"><span>04</span>Store listing</button>
+        <button class="nav-item" data-panel="credentials"><span>05</span>Store access</button>
+        <button class="nav-item" data-panel="automation"><span>06</span>Update delivery</button>
+        <button class="nav-item" data-panel="builds"><span>07</span>Builds & output</button>
+        <button class="nav-item" data-panel="guide"><span>08</span>Approval guide</button>
+      </nav>
+      <div class="side-status">
+        <span class="status-dot" id="gh-dot"></span>
+        <div><strong id="gh-label">Checking GitHub</strong><small id="gh-detail">Please wait</small></div>
+      </div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <div><p class="eyebrow">iTechLounge build control</p><h1 id="page-title">Portfolio overview</h1></div>
+        <button class="primary compact" data-go="apps">+ Configure app</button>
+      </header>
+
+      <section class="panel active" id="panel-overview">
+        <div class="hero">
+          <div>
+            <span class="pill">Windows ready · hosted macOS</span>
+            <h2>One place to turn every Lovable product into real native apps.</h2>
+            <p>Configure identities, assets, signing, automated updates and store builds without maintaining 100 separate native projects.</p>
+            <div class="actions"><button class="primary" data-go="apps">Create your first app</button><button class="secondary" data-go="guide">View launch guide</button></div>
+          </div>
+          <div class="flow-card">
+            <div><span>1</span><b>Lovable / GitHub</b><small>Web source changes</small></div>
+            <i></i><div><span>2</span><b>Native Factory</b><small>Identity, assets, plugins</small></div>
+            <i></i><div><span>3</span><b>Apple + Google</b><small>Test, approve, release</small></div>
+          </div>
+        </div>
+        <div class="metrics">
+          <article><span>Configured apps</span><strong id="metric-apps">0</strong><small>Across every suite</small></article>
+          <article><span>Software suites</span><strong id="metric-suites">0</strong><small>One or many role apps</small></article>
+          <article><span>Readiness checks</span><strong id="metric-ready">0%</strong><small>Configuration progress</small></article>
+          <article><span>Build engine</span><strong class="word">Cloud Mac</strong><small>No Mac mini required</small></article>
+        </div>
+        <form id="publish-form" class="publish-bar">
+          <div><p class="eyebrow">Central factory repository</p><h3>Commit and publish configuration</h3><small>Pushes only known factory files. Credential-like files are refused.</small></div>
+          <label>GitHub repository<input id="publish-repo" placeholder="your-org/native-app-factory" required></label>
+          <label>Commit message<input id="publish-message" value="Update native app configuration" required></label>
+          <label class="inline-check"><input type="checkbox" id="create-repo" checked> Create private repository if missing</label>
+          <button class="primary" type="submit">Commit & push</button>
+        </form>
+        <div class="notice"><b>Python + Supabase control plane</b><span id="control-plane-status">Checking server configuration…</span><button class="secondary" id="sync-supabase" type="button">Sync apps to Supabase</button></div>
+        <div class="section-heading"><div><p class="eyebrow">Portfolio</p><h3>Your native applications</h3></div><button class="text-button" data-go="apps">Manage apps →</button></div>
+        <div id="overview-apps" class="app-grid empty-state">No apps configured yet.</div>
+      </section>
+
+      <section class="panel" id="panel-brief">
+        <div class="section-heading"><div><p class="eyebrow">Lovable + ChatGPT hand-off</p><h2>Make the web app Capacitor-ready</h2><p>Generate a role-aware implementation brief, paste it into Lovable or ChatGPT, then commit the completed web changes.</p></div></div>
+        <div class="form-card standalone"><div class="card-content"><h3>Generate the engineering brief</h3><div class="form-grid"><label>Application<select id="brief-slug"></select></label><label class="wide">Product goals, users and special requirements<textarea id="planning-goals" rows="6" placeholder="What the app does, who uses it, markets, payments, delivery, regulated data, launch goals…"></textarea></label><label class="inline-check"><input type="checkbox" id="call-openai"> Ask the configured OpenAI API to draft the full plan now</label></div><div class="actions"><button class="primary" id="generate-plan">Create ChatGPT planning pack</button><button class="secondary" id="generate-brief">Generate Capacitor brief only</button></div><p class="notice"><b>The brief checks the right boundary:</b><span>Lovable owns responsive web UI and behaviour. Python owns planning orchestration, native generation, Supabase sync, signing and builds.</span></p></div></div>
+      </section>
+
+      <section class="panel" id="panel-apps">
+        <div class="section-heading"><div><p class="eyebrow">Guided configuration</p><h2>App and suite setup</h2><p>Create one app or several role-specific apps from the same software.</p></div></div>
+        <form id="app-form" class="wizard-form" enctype="multipart/form-data">
+          <input type="hidden" name="replace" id="replace" value="false">
+          <div class="form-card">
+            <div class="card-number">1</div><div class="card-content"><h3>Suite and app identity</h3><p>For multiple apps, reuse the suite and choose a different app role and ID.</p>
+              <div class="form-grid">
+                <label>Project organisation <input name="suite" id="suite" placeholder="your-product" required><small>One organisation containing Customer, Kitchen, Driver, etc.</small></label>
+                <label>App role <input name="app_role" id="app-role" value="main" placeholder="customer"></label>
+                <label>App display name <input name="display_name" id="display-name" placeholder="Haccora" required></label>
+                <label>App slug <input name="slug" id="slug" placeholder="your-product-customer" required pattern="[a-z0-9-]+"></label>
+                <label>Brand domain <input id="brand-domain" placeholder="yourproduct.co.uk"><small>Used only to suggest the ID.</small></label>
+                <label>Permanent app ID <div class="input-action"><input name="app_id" id="app-id" placeholder="uk.co.yourproduct.customer" required><button type="button" id="suggest-id">Suggest</button></div><small>Same Bundle ID and Android package.</small></label>
+              </div>
+            </div>
+          </div>
+          <div class="form-card">
+            <div class="card-number">2</div><div class="card-content"><h3>Lovable / GitHub source</h3><p>The factory builds the production <code>dist</code> folder from this repository.</p>
+              <div class="form-grid">
+                <label class="wide">Repository URL <input name="repo" id="repo" placeholder="https://github.com/your-org/your-product.git" required></label>
+                <label>Branch <input name="source_ref" id="source-ref" value="main"></label>
+                <label>Output folder <input name="web_dir" id="web-dir" value="dist"></label>
+                <label>Package manager <select name="package_manager" id="package-manager"><option>bun</option><option>npm</option><option>pnpm</option><option>yarn</option></select></label>
+                <label>Build runner <select name="runner" id="runner"><option value="github-macos">GitHub hosted Mac</option><option value="mac">Own Mac mini</option></select></label>
+                <label>iOS dependencies <select name="ios_package_manager" id="ios-package-manager"><option value="spm">Swift Package Manager</option><option value="cocoapods">CocoaPods</option></select></label>
+              </div>
+            </div>
+          </div>
+          <div class="form-card">
+            <div class="card-number">3</div><div class="card-content"><h3>Native capabilities</h3><p>Select only features this particular app actually uses.</p><div id="capabilities" class="check-grid"></div></div>
+          </div>
+          <div class="form-card">
+            <div class="card-number">4</div><div class="card-content"><h3>Brand files</h3><p>Files are copied into this factory repository; signing credentials are handled separately.</p>
+              <div class="upload-grid">
+                <label class="upload"><b>App icon</b><span>1024×1024 PNG</span><input type="file" name="icon" id="icon" accept="image/png"></label>
+                <label class="upload"><b>Splash artwork</b><span>2732×2732 PNG</span><input type="file" name="splash" id="splash" accept="image/png"></label>
+                <label class="upload"><b>Android Firebase</b><span>google-services.json, if push is used</span><input type="file" name="google_services_json" id="firebase" accept="application/json,.json"></label>
+              </div>
+            </div>
+          </div>
+          <div class="form-card">
+            <div class="card-number">5</div><div class="card-content"><h3>Store listing details</h3><p>These are non-secret records used for readiness and handover.</p>
+              <div class="form-grid">
+                <label>Public brand name <input name="brand_name" id="brand-name" placeholder="Haccora"></label>
+                <label>Legal owner <input name="legal_owner" id="legal-owner" placeholder="iTechLounge Ltd"></label>
+                <label>Google developer name <input name="google_developer_name" id="google-name" placeholder="Haccora"></label>
+                <label>Apple Team ID <input name="apple_team_id" id="apple-team" placeholder="Optional until enrolled"></label>
+                <label>Apple App Store ID <input name="apple_app_id" id="apple-app-id" placeholder="Numeric ID after app creation"></label>
+                <label class="wide">Support URL <input type="url" name="support_url" id="support-url" placeholder="https://yourproduct.co.uk/support"></label>
+                <label class="wide">Privacy URL <input type="url" name="privacy_url" id="privacy-url" placeholder="https://yourproduct.co.uk/privacy"></label>
+                <label class="wide">Account deletion URL <input type="url" name="account_deletion_url" id="deletion-url" placeholder="https://yourproduct.co.uk/delete-account"></label>
+                <label>Google release track <select name="play_track" id="play-track"><option>internal</option><option>alpha</option><option>beta</option><option>production</option></select></label>
+              </div>
+            </div>
+          </div>
+          <div class="sticky-submit"><div><strong id="form-mode">New application</strong><small>Nothing is published until you explicitly build it.</small></div><button class="primary" type="submit">Save application</button></div>
+        </form>
+      </section>
+
+      <section class="panel" id="panel-listing">
+        <div class="section-heading"><div><p class="eyebrow">Submission workspace</p><h2>Marketing, privacy and review details</h2><p>Save the information once, generate Fastlane-ready metadata, and keep each brand/app separate.</p></div></div>
+        <form id="store-form" class="wizard-form">
+          <div class="form-card"><div class="card-number">1</div><div class="card-content"><h3>App and listing copy</h3><div class="form-grid">
+            <label>Application<select id="store-slug" required></select></label><label>Locale<input name="locale" value="en-GB"></label>
+            <label>Store title<input name="app_title" maxlength="30"></label><label>Apple subtitle<input name="apple_subtitle" maxlength="30"></label>
+            <label class="wide">Google short description<input name="google_short_description" maxlength="80"></label>
+            <label class="wide">Full description<textarea name="full_description" maxlength="4000" rows="7"></textarea></label>
+            <label class="wide">Apple keywords<input name="apple_keywords" placeholder="comma,separated,keywords"></label>
+            <label class="wide">Apple promotional text<textarea name="promotional_text" maxlength="170" rows="3"></textarea></label>
+            <label class="wide">What’s new / release notes<textarea name="release_notes" rows="4"></textarea></label>
+            <label>Primary category<input name="primary_category"></label><label>Secondary category<input name="secondary_category"></label>
+            <label>Copyright<input name="copyright"></label><label>Target audience<input name="target_audience" placeholder="e.g. UK adults 18+"></label>
+          </div></div></div>
+          <div class="form-card"><div class="card-number">2</div><div class="card-content"><h3>Public URLs and reviewer contact</h3><div class="form-grid">
+            <label class="wide">Support URL<input type="url" name="support_url"></label><label class="wide">Privacy policy URL<input type="url" name="privacy_url"></label>
+            <label class="wide">Account deletion URL<input type="url" name="account_deletion_url"></label><label class="wide">Marketing URL<input type="url" name="marketing_url"></label>
+            <label>Contact email<input type="email" name="contact_email"></label><label>Contact phone<input name="contact_phone"></label>
+            <label>Apple account owner email<input type="email" name="apple_account_email"></label><label>Google account owner email<input type="email" name="google_account_email"></label>
+            <label>Reviewer first name<input name="review_contact_first_name"></label><label>Reviewer last name<input name="review_contact_last_name"></label>
+            <label class="wide">Review notes — never put passwords here<textarea name="review_notes" rows="5"></textarea></label>
+            <label class="wide">Age rating notes<textarea name="age_rating_notes" rows="3"></textarea></label>
+            <label class="wide">Compliance / Data Safety notes<textarea name="compliance_notes" rows="5"></textarea></label>
+            <label class="wide">Marketing campaign notes<textarea name="marketing_notes" rows="3"></textarea></label>
+          </div></div></div>
+          <div class="form-card"><div class="card-number">3</div><div class="card-content"><h3>Declarations and update policy</h3><div class="check-grid" id="store-flags">
+            <label><input type="checkbox" name="requires_login"> Login required</label><label><input type="checkbox" name="allows_account_creation"> Creates accounts</label><label><input type="checkbox" name="contains_ads"> Contains ads</label><label><input type="checkbox" name="uses_tracking"> Uses tracking</label><label><input type="checkbox" name="collects_personal_data"> Collects personal data</label><label><input type="checkbox" name="shares_personal_data"> Shares personal data</label><label><input type="checkbox" name="uses_encryption" checked> Uses encryption</label><label><input type="checkbox" name="user_generated_content"> User-generated content</label><label><input type="checkbox" name="children_targeted"> Targets children</label><label><input type="checkbox" name="regulated_features"> Regulated features</label><label><input type="checkbox" name="apple_bundle_registered"> Apple Bundle ID registered</label><label><input type="checkbox" name="apple_app_record_created"> App Store record created</label><label><input type="checkbox" name="google_app_record_created"> Play Console record created</label><label><input type="checkbox" name="play_app_signing_enabled"> Play App Signing enabled</label><label><input type="checkbox" name="apple_privacy_confirmed"> Apple privacy confirmed</label><label><input type="checkbox" name="google_data_safety_confirmed"> Google Data Safety confirmed</label><label><input type="checkbox" name="store_agreements_active"> Agreements, tax and banking active</label>
+          </div><div class="form-grid"><label>Update mode<select name="update_mode"><option value="internal-build">Signed TestFlight / Play build</option><option value="appflow-live">Appflow live web updates</option></select></label><label>Appflow App ID<input name="appflow_app_id" placeholder="Required only for live mode"></label><label>Appflow channel<input name="appflow_channel" value="production"></label><label>Initial Android production rollout<input name="android_production_rollout" type="number" min="0.01" max="1" step="0.01" value="0.1"><small>0.1 means a 10% staged rollout.</small></label></div></div></div>
+          <div class="form-card"><div class="card-number">4</div><div class="card-content"><h3>Screenshots and graphics</h3><p>Upload finished, store-ready artwork. Apple accepts 1–10 screenshots per device type.</p><div class="upload-grid">
+            <label class="upload"><b>Apple iPhone</b><span>PNG/JPEG screenshots</span><input class="store-assets" data-kind="apple-iphone" type="file" multiple accept="image/png,image/jpeg"></label>
+            <label class="upload"><b>Apple iPad</b><span>Only when the app supports iPad</span><input class="store-assets" data-kind="apple-ipad" type="file" multiple accept="image/png,image/jpeg"></label>
+            <label class="upload"><b>Google phone</b><span>Play listing screenshots</span><input class="store-assets" data-kind="google-phone" type="file" multiple accept="image/png,image/jpeg"></label>
+            <label class="upload"><b>Google tablet</b><span>Tablet screenshots</span><input class="store-assets" data-kind="google-tablet" type="file" multiple accept="image/png,image/jpeg"></label>
+            <label class="upload"><b>Google feature graphic</b><span>1024×500 PNG/JPEG</span><input class="store-assets" data-kind="google-feature" type="file" accept="image/png,image/jpeg"></label>
+          </div><div id="asset-summary" class="notice"><b>No files selected</b><span>Saved assets appear here after upload.</span></div></div></div>
+          <div class="sticky-submit"><div><strong>Store submission package</strong><small>Saves metadata only; it does not submit for review.</small></div><button class="secondary" type="button" id="generate-store-package">Generate package</button><button class="primary" type="submit">Save store details</button></div>
+        </form>
+      </section>
+
+      <section class="panel" id="panel-credentials">
+        <div class="section-heading"><div><p class="eyebrow">Protected configuration</p><h2>Apple and Google access</h2><p>Secret values go directly to the selected GitHub Environment and are never written to the manifest.</p></div></div>
+        <div class="notice warning"><b>Before continuing</b><span>Install GitHub CLI, run <code>gh auth login</code>, and use restricted tokens. Keep recovery copies in your company password manager.</span></div>
+        <form id="credential-form" class="wizard-form" enctype="multipart/form-data">
+          <div class="form-card"><div class="card-number">A</div><div class="card-content"><h3>Target</h3><div class="form-grid"><label>Application <select name="credential_slug" id="credential-slug" required></select></label><label>Factory GitHub repository <input name="factory_repo" id="factory-repo" placeholder="your-org/native-app-factory" required></label><label class="inline-check"><input type="checkbox" name="configure_production" value="true" checked> Also configure the protected production-approval environment</label></div></div></div>
+          <div class="form-card"><div class="card-number apple"></div><div class="card-content"><h3>Apple App Store Connect</h3><div class="form-grid">
+            <label>API Key ID <input name="apple_key_id" autocomplete="off"></label><label>Issuer ID <input name="apple_issuer_id" autocomplete="off"></label>
+            <label class="upload wide"><b>App Store Connect private key</b><span>AuthKey_XXXXXXXXXX.p8</span><input type="file" name="apple_private_key" accept=".p8"></label>
+            <label class="wide">Private Match repository URL <input name="match_git_url" placeholder="https://github.com/your-org/apple-signing.git" autocomplete="off"></label>
+            <label>Match repository token <input type="password" name="match_repo_token" autocomplete="new-password"></label><label>Match encryption password <input type="password" name="match_password" autocomplete="new-password"></label>
+            <label>Match mode <select name="match_readonly"><option value="true">Read only (normal)</option><option value="false">Bootstrap certificates once</option></select></label>
+          </div></div></div>
+          <div class="form-card"><div class="card-number android">A</div><div class="card-content"><h3>Google Play</h3><div class="form-grid">
+            <label class="upload"><b>Android upload keystore</b><span>.jks or .keystore</span><input type="file" name="android_keystore" accept=".jks,.keystore"></label>
+            <label class="upload"><b>Play service account</b><span>JSON key used for uploads</span><input type="file" name="google_service_account" accept=".json,application/json"></label>
+            <label>Keystore password <input type="password" name="android_keystore_password" autocomplete="new-password"></label><label>Key alias <input name="android_key_alias" autocomplete="off"></label><label>Key password <input type="password" name="android_key_password" autocomplete="new-password"></label>
+          </div></div></div>
+          <div class="form-card"><div class="card-number">G</div><div class="card-content"><h3>Private source access</h3><div class="form-grid"><label class="wide">Read-only Lovable repository token <input type="password" name="source_repo_token" autocomplete="new-password"><small>Optional for a public source repository.</small></label></div></div></div>
+          <div class="form-card"><div class="card-number">R</div><div class="card-content"><h3>Store reviewer login</h3><p>Only needed when reviewers cannot use the app without signing in. Stored as protected GitHub secrets.</p><div class="form-grid"><label>Reviewer username<input name="review_username" autocomplete="off"></label><label>Reviewer password<input type="password" name="review_password" autocomplete="new-password"></label></div></div></div>
+          <div class="form-card"><div class="card-number">L</div><div class="card-content"><h3>Optional Appflow live updates</h3><p>Use only after the app is configured in Ionic Appflow and its GitHub repository is connected.</p><div class="form-grid"><label class="wide">Ionic access token<input type="password" name="ionic_token" autocomplete="new-password"><small>Stored as IONIC_TOKEN. Native/plugin changes still require a signed store build.</small></label></div></div></div>
+          <div class="sticky-submit"><div><strong>Secure transfer</strong><small>Empty fields leave existing GitHub secrets unchanged.</small></div><button class="primary" type="submit">Send secrets to GitHub</button></div>
+        </form>
+      </section>
+
+      <section class="panel" id="panel-automation">
+        <div class="section-heading"><div><p class="eyebrow">Connection bridge</p><h2>Lovable changes → native updates</h2><p>Install one workflow in the source repository. Every successful web build then queues all selected role apps.</p></div></div>
+        <div class="automation-map"><div><b>Lovable commit</b><span>Push to main branch</span></div><i>→</i><div><b>Web verification</b><span>Install and build dist</span></div><i>→</i><div><b>Native builds</b><span>One or many apps</span></div><i>→</i><div><b>Test tracks</b><span>Approval before production</span></div></div>
+        <form id="bridge-form" class="form-card standalone">
+          <div class="card-content"><h3>Install or update the bridge</h3><div class="form-grid">
+            <label>Source application <select name="source_slug" id="source-slug" required></select></label>
+            <label>Factory repository <input name="factory_repo" id="bridge-factory-repo" placeholder="your-org/native-app-factory" required></label>
+            <label class="wide">Apps rebuilt from this source <span id="bridge-apps" class="selection-list"></span></label>
+            <label class="wide">Restricted dispatch token <input type="password" name="dispatch_token" required autocomplete="new-password"><small>Needs Contents write access only to the factory repository. It is stored as a secret in the source repository.</small></label>
+            <label class="inline-check"><input type="checkbox" name="auto_submit" value="true" checked> Automatically upload every successful change to TestFlight / Play Internal Testing</label>
+            <label class="inline-check"><input type="checkbox" name="upload_metadata" value="true"> Also refresh saved store metadata and screenshots</label>
+          </div><button class="primary" type="submit">Install bridge in GitHub</button></div>
+        </form>
+        <div class="notice"><b>Two update modes</b><span><strong>Normal factory mode:</strong> every change builds a version for internal testing; production remains approval-gated. <strong>Optional live web updates:</strong> Appflow can deliver JS/HTML/CSS changes without a store submission, but native/plugin changes still require a binary.</span></div>
+      </section>
+
+      <section class="panel" id="panel-builds">
+        <div class="section-heading"><div><p class="eyebrow">Cloud compilation</p><h2>Build, submit and retrieve output</h2><p>Queue Android first, then iOS. Keep production submission behind a human approval.</p></div><button class="secondary" id="refresh-runs">Refresh runs</button></div>
+        <form id="build-form" class="build-bar">
+          <label>Application<select id="build-slug" required></select></label>
+          <label>Platform<select id="build-platform"><option value="android">Android</option><option value="ios">iOS</option><option value="all">Both</option></select></label>
+          <label>Destination<select id="build-submit"><option value="artifact">Build artifact only</option><option value="internal">Upload to TestFlight / Play internal</option><option value="metadata">Internal build + listing metadata</option></select></label>
+          <button class="primary" type="submit">Queue build</button>
+        </form>
+        <div class="section-heading"><div><p class="eyebrow">Final approval gate</p><h3>Submit the exact tested build</h3><p>This promotes the build that passed device QA. It does not compile a different binary.</p></div></div>
+        <form id="release-form" class="form-card standalone">
+          <div class="card-content"><div class="form-grid">
+            <label>Application<select id="release-slug" required></select></label>
+            <label>Store<select id="release-platform"><option value="ios">Apple App Store</option><option value="android">Google Play</option></select></label>
+            <label>Tested build number / version code<input id="tested-build-number" inputmode="numeric" required></label>
+            <label>Tested Lovable/Git commit SHA<input id="release-source-sha" required></label>
+            <label class="wide">Real-device QA evidence<textarea id="release-qa-notes" rows="4" required placeholder="Devices, OS versions, roles and critical journeys tested"></textarea></label>
+            <label class="wide">Typed confirmation<input id="release-confirmation" required placeholder="SUBMIT app-slug"><small>The app-specific production GitHub Environment should have required reviewers enabled.</small></label>
+          </div><button class="primary" type="submit">Queue protected store submission</button></div>
+        </form>
+        <div class="table-wrap"><table><thead><tr><th>Run</th><th>Branch</th><th>Started</th><th>Status</th><th>Output</th></tr></thead><tbody id="runs-body"><tr><td colspan="5" class="empty-cell">Connect GitHub and refresh to see builds.</td></tr></tbody></table></div>
+      </section>
+
+      <section class="panel" id="panel-guide">
+        <div class="section-heading"><div><p class="eyebrow">Live launch guide</p><h2>What happens next</h2><p>The checklist updates from your saved configuration. Manual store and device tasks remain visible.</p></div></div>
+        <div class="guide-layout"><div id="guide-checks" class="guide-checks"></div><aside class="guide-aside">
+          <h3>Important boundaries</h3>
+          <ul><li>A web commit can automatically reach internal testing.</li><li>Apple and Google production updates can still require review.</li><li>Never commit signing keys or store service-account JSON.</li><li>Each installed app needs a permanent unique identifier.</li><li>Customer, Driver and Kitchen apps are separate binaries.</li><li>Test camera, push, uploads and offline behaviour on real devices.</li></ul>
+          <a href="https://developer.apple.com/app-store/review/guidelines/" target="_blank" rel="noreferrer">Apple review guidelines ↗</a>
+        </aside></div>
+      </section>
+    </main>
+  </div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="busy" class="busy" hidden><div class="spinner"></div><b>Working…</b><span>Keep this window open.</span></div>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

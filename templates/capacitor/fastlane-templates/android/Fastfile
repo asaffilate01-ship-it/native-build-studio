@@ -1,0 +1,41 @@
+default_platform(:android)
+
+platform :android do
+  desc "Create a signed Play Store AAB and optionally upload it"
+  lane :release do
+    signing_properties = {
+      "android.injected.version.code" => ENV.fetch("ANDROID_VERSION_CODE"),
+      "android.injected.version.name" => ENV.fetch("ANDROID_VERSION_NAME"),
+      "android.injected.signing.store.file" => ENV.fetch("ANDROID_KEYSTORE_PATH"),
+      "android.injected.signing.store.password" => ENV.fetch("ANDROID_KEYSTORE_PASSWORD"),
+      "android.injected.signing.key.alias" => ENV.fetch("ANDROID_KEY_ALIAS"),
+      "android.injected.signing.key.password" => ENV.fetch("ANDROID_KEY_PASSWORD")
+    }
+    gradle(task: "bundle", build_type: "Release", properties: signing_properties)
+
+    aab = lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH]
+    sh("mkdir", "-p", "../artifacts/android")
+    sh("cp", aab, "../artifacts/android/#{ENV.fetch('ANDROID_PACKAGE')}.aab")
+
+    # The AAB is for Play. The signed APK is also produced so a Windows operator
+    # can download and sideload the exact release configuration on test devices.
+    gradle(task: "assemble", build_type: "Release", properties: signing_properties)
+    apk = lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]
+    sh("cp", apk, "../artifacts/android/#{ENV.fetch('ANDROID_PACKAGE')}.apk")
+
+    if ENV.fetch("FACTORY_SUBMIT", "false") == "true"
+      upload_metadata = ENV.fetch("FACTORY_UPLOAD_METADATA", "false") == "true"
+      upload_to_play_store(
+        json_key: ENV.fetch("SUPPLY_JSON_KEY"),
+        package_name: ENV.fetch("ANDROID_PACKAGE"),
+        aab: aab,
+        track: ENV.fetch("PLAY_TRACK", "internal"),
+        release_status: "draft",
+        metadata_path: "fastlane/metadata",
+        skip_upload_metadata: !upload_metadata,
+        skip_upload_images: !upload_metadata,
+        skip_upload_screenshots: !upload_metadata
+      )
+    end
+  end
+end

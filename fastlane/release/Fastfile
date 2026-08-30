@@ -1,0 +1,57 @@
+platform :ios do
+  desc "Submit an already-tested TestFlight build to App Review"
+  lane :submit_review do
+    api_key = app_store_connect_api_key(
+      key_id: ENV.fetch("APPLE_KEY_ID"),
+      issuer_id: ENV.fetch("APPLE_ISSUER_ID"),
+      key_filepath: ENV.fetch("APPLE_KEY_FILE")
+    )
+
+    review_information = {
+      first_name: ENV.fetch("REVIEW_FIRST_NAME"),
+      last_name: ENV.fetch("REVIEW_LAST_NAME"),
+      phone_number: ENV.fetch("REVIEW_PHONE"),
+      email_address: ENV.fetch("REVIEW_EMAIL"),
+      notes: ENV.fetch("REVIEW_NOTES", "")
+    }
+    if ENV["REVIEW_USERNAME"] && ENV["REVIEW_PASSWORD"]
+      review_information[:demo_user] = ENV["REVIEW_USERNAME"]
+      review_information[:demo_password] = ENV["REVIEW_PASSWORD"]
+    end
+
+    deliver(
+      api_key: api_key,
+      app_identifier: ENV.fetch("APP_IDENTIFIER"),
+      app_version: ENV.fetch("APP_VERSION"),
+      build_number: ENV.fetch("TESTED_BUILD_NUMBER"),
+      metadata_path: ENV.fetch("IOS_METADATA_PATH"),
+      screenshots_path: ENV.fetch("IOS_SCREENSHOTS_PATH"),
+      app_review_information: review_information,
+      skip_binary_upload: true,
+      submit_for_review: true,
+      automatic_release: false,
+      force: true
+    )
+  end
+end
+
+platform :android do
+  desc "Promote one tested Play Internal build to a staged production rollout"
+  lane :promote_tested do
+    upload_to_play_store(
+      json_key: ENV.fetch("SUPPLY_JSON_KEY"),
+      package_name: ENV.fetch("ANDROID_PACKAGE"),
+      track: "internal",
+      track_promote_to: "production",
+      version_codes: [ENV.fetch("TESTED_BUILD_NUMBER").to_i],
+      rollout: ENV.fetch("ANDROID_ROLLOUT", "0.1").to_f,
+      release_status: "inProgress",
+      metadata_path: ENV.fetch("ANDROID_METADATA_PATH"),
+      skip_upload_apk: true,
+      skip_upload_aab: true,
+      skip_upload_metadata: false,
+      skip_upload_images: false,
+      skip_upload_screenshots: false
+    )
+  end
+end

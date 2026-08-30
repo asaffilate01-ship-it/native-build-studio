@@ -1,0 +1,73 @@
+work_dir: ../.factory/work
+
+apps:
+  - slug: haccora
+    suite: haccora
+    app_role: main
+    source:
+      repo: https://github.com/example/haccora.git
+      ref: main
+      package_manager: bun
+      install_command: bun install --frozen-lockfile
+      build_command: bun run build
+      web_dir: dist
+    native:
+      engine: capacitor
+      runner: github-macos
+      display_name: Haccora
+      ios_bundle_id: uk.co.haccora.app
+      android_package: uk.co.haccora.app
+      version: 1.0.0
+      build_number: 1
+      ios_package_manager: spm
+      capabilities:
+        - camera
+        - filesystem
+        - network
+        - preferences
+        - push
+        - share
+      embed_web_assets: true
+    assets:
+      icon: ../assets/haccora/icon.png
+      splash: ../assets/haccora/splash.png
+      google_services_json: ../assets/haccora/google-services.json
+    credentials:
+      apple_key_id_env: APPLE_KEY_ID
+      apple_issuer_id_env: APPLE_ISSUER_ID
+      apple_private_key_b64_env: APPLE_PRIVATE_KEY_B64
+      match_password_env: MATCH_PASSWORD
+      google_service_account_b64_env: GOOGLE_SERVICE_ACCOUNT_B64
+      android_keystore_b64_env: ANDROID_KEYSTORE_B64
+      android_keystore_password_env: ANDROID_KEYSTORE_PASSWORD
+      android_key_alias_env: ANDROID_KEY_ALIAS
+      android_key_password_env: ANDROID_KEY_PASSWORD
+    store:
+      brand_name: Haccora
+      legal_owner: iTechLounge Ltd
+      support_url: https://haccora.co.uk/support
+      privacy_url: https://haccora.co.uk/privacy
+      account_deletion_url: https://haccora.co.uk/delete-account
+      google_developer_name: Haccora
+      play_track: internal
+
+  - slug: example-expo-app
+    source:
+      repo: https://github.com/example/expo-app.git
+      ref: main
+      package_manager: npm
+      install_command: npm ci
+      build_command: npm run build
+      web_dir: dist
+    native:
+      engine: expo
+      runner: eas
+      display_name: Example Expo App
+      ios_bundle_id: uk.co.itechlounge.exampleexpo
+      android_package: uk.co.itechlounge.exampleexpo
+      version: 1.0.0
+      build_number: 1
+      eas_profile: production
+    assets:
+      icon: ../assets/example-expo/icon.png
+      splash: ../assets/example-expo/splash.png

@@ -1,0 +1,127 @@
+name: Submit tested build for approval
+
+on:
+  workflow_dispatch:
+    inputs:
+      app_slug:
+        description: App slug from config/apps.yml
+        required: true
+        type: string
+      platform:
+        description: Store to submit to
+        required: true
+        type: choice
+        options: [ios, android]
+      tested_build_number:
+        description: Exact TestFlight build number or Play version code that passed QA
+        required: true
+        type: string
+      source_sha:
+        description: Lovable/source commit SHA that was tested
+        required: true
+        type: string
+      qa_notes:
+        description: Short record of completed device testing
+        required: true
+        type: string
+      confirmation:
+        description: Type SUBMIT followed by the app slug, for example SUBMIT haccora-customer
+        required: true
+        type: string
+
+concurrency:
+  group: production-${{ inputs.app_slug }}-${{ inputs.platform }}
+  cancel-in-progress: false
+
+jobs:
+  approve-and-promote:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.app_slug }}-production
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Verify explicit confirmation
+        env:
+          CONFIRMATION: ${{ inputs.confirmation }}
+          APP_SLUG: ${{ inputs.app_slug }}
+          BUILD_NUMBER: ${{ inputs.tested_build_number }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
+        run: |
+          test "$CONFIRMATION" = "SUBMIT $APP_SLUG"
+          [[ "$BUILD_NUMBER" =~ ^[1-9][0-9]*$ ]]
+          [[ "$SOURCE_SHA" =~ ^[0-9a-fA-F]{7,40}$ ]]
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+      - run: pip install .
+      - name: Validate manifest and generate listing package
+        id: metadata
+        env:
+          APP_SLUG: ${{ inputs.app_slug }}
+        run: |
+          native-factory validate
+          native-factory store-package "$APP_SLUG"
+          native-factory metadata "$APP_SLUG" > .factory-release.json
+          echo "json=$(jq -c . .factory-release.json)" >> "$GITHUB_OUTPUT"
+      - name: Prepare temporary store credentials
+        env:
+          APPLE_PRIVATE_KEY_B64: ${{ secrets.APPLE_PRIVATE_KEY_B64 }}
+          GOOGLE_SERVICE_ACCOUNT_B64: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_B64 }}
+        run: |
+          mkdir -p .factory/release-secrets
+          chmod 700 .factory/release-secrets
+          if [ "${{ inputs.platform }}" = "ios" ]; then
+            printf '%s' "$APPLE_PRIVATE_KEY_B64" | base64 --decode > .factory/release-secrets/AuthKey.p8
+            chmod 600 .factory/release-secrets/AuthKey.p8
+          else
+            printf '%s' "$GOOGLE_SERVICE_ACCOUNT_B64" | base64 --decode > .factory/release-secrets/play.json
+            chmod 600 .factory/release-secrets/play.json
+          fi
+      - name: Submit tested TestFlight build to App Review
+        if: inputs.platform == 'ios'
+        env:
+          APPLE_KEY_ID: ${{ secrets.APPLE_KEY_ID }}
+          APPLE_ISSUER_ID: ${{ secrets.APPLE_ISSUER_ID }}
+          APPLE_KEY_FILE: ${{ github.workspace }}/.factory/release-secrets/AuthKey.p8
+          APP_IDENTIFIER: ${{ fromJson(steps.metadata.outputs.json || '{}').ios_bundle_id }}
+          APP_VERSION: ${{ fromJson(steps.metadata.outputs.json || '{}').version }}
+          TESTED_BUILD_NUMBER: ${{ inputs.tested_build_number }}
+          REVIEW_FIRST_NAME: ${{ fromJson(steps.metadata.outputs.json || '{}').review_first_name }}
+          REVIEW_LAST_NAME: ${{ fromJson(steps.metadata.outputs.json || '{}').review_last_name }}
+          REVIEW_PHONE: ${{ fromJson(steps.metadata.outputs.json || '{}').review_phone }}
+          REVIEW_EMAIL: ${{ fromJson(steps.metadata.outputs.json || '{}').review_email }}
+          REVIEW_NOTES: ${{ fromJson(steps.metadata.outputs.json || '{}').review_notes }}
+          REVIEW_USERNAME: ${{ secrets.REVIEW_USERNAME }}
+          REVIEW_PASSWORD: ${{ secrets.REVIEW_PASSWORD }}
+          IOS_METADATA_PATH: ${{ github.workspace }}/store-packages/${{ inputs.app_slug }}/ios/fastlane/metadata
+          IOS_SCREENSHOTS_PATH: ${{ github.workspace }}/store-packages/${{ inputs.app_slug }}/ios/fastlane/screenshots
+        run: bundle exec fastlane -f fastlane/release/Fastfile ios submit_review
+      - name: Promote tested Play build to staged production
+        if: inputs.platform == 'android'
+        env:
+          SUPPLY_JSON_KEY: ${{ github.workspace }}/.factory/release-secrets/play.json
+          ANDROID_PACKAGE: ${{ fromJson(steps.metadata.outputs.json || '{}').android_package }}
+          ANDROID_ROLLOUT: ${{ fromJson(steps.metadata.outputs.json || '{}').android_rollout }}
+          ANDROID_METADATA_PATH: ${{ github.workspace }}/store-packages/${{ inputs.app_slug }}/android/fastlane/metadata
+          TESTED_BUILD_NUMBER: ${{ inputs.tested_build_number }}
+        run: bundle exec fastlane -f fastlane/release/Fastfile android promote_tested
+      - name: Record approval evidence
+        env:
+          QA_NOTES: ${{ inputs.qa_notes }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          BUILD_NUMBER: ${{ inputs.tested_build_number }}
+        run: |
+          {
+            echo "### Store submission queued"
+            echo "- App: ${{ inputs.app_slug }}"
+            echo "- Platform: ${{ inputs.platform }}"
+            echo "- Tested build: $BUILD_NUMBER"
+            echo "- Source commit: $SOURCE_SHA"
+            echo "- QA evidence: $QA_NOTES"
+          } >> "$GITHUB_STEP_SUMMARY"
