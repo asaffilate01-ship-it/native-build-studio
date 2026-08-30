@@ -38,8 +38,8 @@ function BuildsPage() {
   const queryClient = useQueryClient();
   const { data: apps = [], isLoading: appsLoading } = useApps(currentOrgId);
   const [appId, setAppId] = useState<string | null>(null);
-  const [platform, setPlatform] = useState("android");
-  const [destination, setDestination] = useState("internal");
+  const [platform, setPlatform] = useState<"ios" | "android" | "all">("android");
+  const [destination, setDestination] = useState<"internal" | "production">("internal");
   const [commitSha, setCommitSha] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [actionError, setActionError] = useState<string | null>(null);
@@ -58,7 +58,7 @@ function BuildsPage() {
         .from("native_build_jobs")
         .select("*")
         .eq("app_id", appId!)
-        .order("created_at", { ascending: false })
+        .order("requested_at", { ascending: false })
         .limit(50);
       if (error) throw new Error(error.message);
       return data ?? [];
@@ -117,7 +117,7 @@ function BuildsPage() {
             <Field label="Platform">
               <select
                 value={platform}
-                onChange={(event) => setPlatform(event.target.value)}
+                onChange={(event) => setPlatform(event.target.value as "ios" | "android" | "all")}
                 className="rounded-md border border-input bg-background px-3 py-2 text-sm"
               >
                 <option value="android">Android</option>
@@ -128,7 +128,7 @@ function BuildsPage() {
             <Field label="Destination" hint="Internal testing is the default and safest route.">
               <select
                 value={destination}
-                onChange={(event) => setDestination(event.target.value)}
+                onChange={(event) => setDestination(event.target.value as "internal" | "production")}
                 className="rounded-md border border-input bg-background px-3 py-2 text-sm"
               >
                 <option value="internal">Internal testing</option>
@@ -189,18 +189,18 @@ function BuildsPage() {
             <StatusPill tone={statusTone(job.status)}>{job.status}</StatusPill>
             <span className="font-medium capitalize">{job.platform}</span>
             <span className="text-muted-foreground capitalize">{job.destination}</span>
-            <span className="ident">{job.commit_sha ? job.commit_sha.slice(0, 12) : "branch head"}</span>
-            <span className="text-muted-foreground">{job.runner ?? "unassigned runner"}</span>
+            <span className="ident">{job.source_sha ? job.source_sha.slice(0, 12) : "branch head"}</span>
+            <span className="text-muted-foreground">{job.runner_job_id ?? "unassigned runner"}</span>
             <span className="text-muted-foreground">
-              {new Date(job.created_at).toLocaleString("en-GB")}
+              {new Date(job.requested_at).toLocaleString("en-GB")}
             </span>
-            {job.artifact_url ? (
-              <a href={job.artifact_url} className="underline underline-offset-4">
+            {job.runner_url ? (
+              <a href={job.runner_url} className="underline underline-offset-4">
                 Artefact
               </a>
             ) : null}
-            {job.error_message ? (
-              <span className="w-full text-destructive">{job.error_message}</span>
+            {job.failure_summary ? (
+              <span className="w-full text-destructive">{job.failure_summary}</span>
             ) : null}
           </article>
         ))}
