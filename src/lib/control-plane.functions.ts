@@ -9,8 +9,8 @@ type QueueBuildInput = {
   destination: "internal" | "production";
   submitToInternal: boolean;
   uploadMetadata: boolean;
-  sourceSha?: string;
-  releaseOwnerConfirmation?: string;
+  sourceSha?: string | undefined;
+  releaseOwnerConfirmation?: string | undefined;
 };
 
 /**
