@@ -110,8 +110,8 @@ function ListingPage() {
       next[key] = ((listing?.[key] as string) ?? "");
     });
     setDraft(next);
-    setDeclarations((listing?.declarations as Record<string, boolean>) ?? {});
-    setArtwork((listing?.artwork as Record<string, boolean>) ?? {});
+    setDeclarations((listing?.['declarations'] as Record<string, boolean>) ?? {});
+    setArtwork((listing?.['artwork'] as Record<string, boolean>) ?? {});
   }, [listing]);
 
   const save = useMutation({
@@ -157,8 +157,8 @@ function ListingPage() {
         title="Store listing"
         description="Copy, URLs, declarations and artwork for the hand-off pack. These switches prepare the submission; they do not replace Apple App Privacy or Play Data Safety, which must reflect real production behaviour."
         actions={
-          <StatusPill tone={statusTone((listing?.submission_status as string) ?? "draft")}>
-            {((listing?.submission_status as string) ?? "draft").replace("_", " ")}
+          <StatusPill tone={statusTone((listing?.['submission_status'] as string) ?? "draft")}>
+            {((listing?.['submission_status'] as string) ?? "draft").replace("_", " ")}
           </StatusPill>
         }
       />
