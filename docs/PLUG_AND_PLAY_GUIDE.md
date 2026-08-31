@@ -18,28 +18,28 @@ outputs; this document remains the detailed reference.
 ## 1. Decide who owns the store accounts
 
 The chosen portfolio model is brand-first. On Google Play, use separate
-organisation developer accounts for major public brands such as Haccora,
+organisation developer accounts for major public brands such as Example Brand,
 TaxCenda and Craftvaro when each should have its own developer profile. Google
 permits multiple accounts under the same D-U-N-S identity, but they must be
 declared as associated accounts. The verified legal owner may remain
-iTechLounge Ltd.
+Brand Legal Entity Ltd.
 
 Apple's developer/seller name is account-wide and is not configurable per app.
 An organisation can select an accepted registered trade/DBA name when its first
 app is created, but that name cannot later be changed. For an Apple account
-displaying Haccora, confirm the registered trade-name and enrollment structure
-with Apple before paying or uploading. Otherwise the app can be named Haccora
-while the seller remains iTechLounge Ltd.
+displaying Example Brand, confirm the registered trade-name and enrollment structure
+with Apple before paying or uploading. Otherwise the app can be named Example Brand
+while the seller remains Brand Legal Entity Ltd.
 
 For a white-label app legally owned and published by an independent client, the
 client should normally own the Apple/Google developer accounts and invite
-iTechLounge with the minimum required role. Apple says a contract developer can
+your delivery team with the minimum required role. Apple says a contract developer can
 assist while the client organisation enrols and submits the app.
 
 Each app always needs its own permanent identifier, for example:
 
 ```text
-uk.co.haccora.app
+uk.co.example-platform.app
 com.taxcenda.app
 com.craftvaro.app
 ```
@@ -93,8 +93,8 @@ in a browser.
 Create:
 
 ```text
-assets/haccora/icon.png
-assets/haccora/splash.png
+assets/example-platform/icon.png
+assets/example-platform/splash.png
 ```
 
 | Asset | Recommended source | Notes |
@@ -124,13 +124,13 @@ Add a Lovable app using hosted macOS:
 
 ```bash
 native-factory onboard \
-  --slug haccora \
-  --name "Haccora" \
-  --repo "https://github.com/your-org/haccora-connect.git" \
-  --app-id "uk.co.haccora.app" \
-  --icon "assets/haccora/icon.png" \
-  --splash "assets/haccora/splash.png" \
-  --google-services-json "assets/haccora/google-services.json" \
+  --slug example-platform \
+  --name "Example Brand" \
+  --repo "https://github.com/your-org/example-platform-connect.git" \
+  --app-id "uk.co.example-platform.app" \
+  --icon "assets/example-platform/icon.png" \
+  --splash "assets/example-platform/splash.png" \
+  --google-services-json "assets/example-platform/google-services.json" \
   --runner github-macos \
   --package-manager bun \
   --capability camera \
@@ -148,10 +148,10 @@ Run:
 
 ```bash
 native-factory validate
-native-factory readiness haccora --platform all --submit
-native-factory doctor haccora --platform all
-native-factory web-check haccora
-native-factory plan haccora --platform all
+native-factory readiness example-platform --platform all --submit
+native-factory doctor example-platform --platform all
+native-factory web-check example-platform
+native-factory plan example-platform --platform all
 ```
 
 `web-check` clones the Lovable repo, installs dependencies, builds it and
@@ -164,7 +164,7 @@ Create one private factory repository. Commit `src/`, `templates/`,
 service-account JSON, a completed `.env`, or build output.
 
 For each slug, create a GitHub Environment with the exact same name. For
-Haccora, the Environment is `haccora`. Add an approval rule before submission.
+Example Brand, the Environment is `example-platform`. Add an approval rule before submission.
 
 If the Lovable source repository is private, add `SOURCE_REPO_TOKEN`: preferably
 a short-lived GitHub App installation token, or a fine-grained token with
@@ -180,7 +180,7 @@ optional TestFlight/Play upload.
 ### 6.1 Create the organisation account and app
 
 Create/verify a Google Play Console organisation account using the correct
-iTechLounge legal and contact details. Invite operators with app-level access.
+your delivery team legal and contact details. Invite operators with app-level access.
 Google currently lists a USD 25 one-time registration fee; confirm the amount
 shown for the account's country during registration.
 
@@ -200,9 +200,9 @@ Run on a protected workstation:
 
 ```bash
 keytool -genkeypair -v \
-  -keystore haccora-upload.jks \
+  -keystore example-platform-upload.jks \
   -keyalg RSA -keysize 2048 -validity 10000 \
-  -alias haccora-upload
+  -alias example-platform-upload
 ```
 
 Keep the original and passwords in the company secret manager. Enrol in
@@ -215,16 +215,16 @@ Base64 the keystore.
 macOS/Linux:
 
 ```bash
-base64 < haccora-upload.jks | tr -d '\n'
+base64 < example-platform-upload.jks | tr -d '\n'
 ```
 
 Windows PowerShell:
 
 ```powershell
-[Convert]::ToBase64String([IO.File]::ReadAllBytes("haccora-upload.jks"))
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("example-platform-upload.jks"))
 ```
 
-Add these `haccora` Environment secrets:
+Add these `example-platform` Environment secrets:
 
 ```text
 ANDROID_KEYSTORE_B64
@@ -256,7 +256,7 @@ project. Firebase server keys remain backend secrets and do not belong there.
 Run the GitHub workflow with:
 
 ```text
-app_slug: haccora
+app_slug: example-platform
 platform: android
 submit: false
 ```
@@ -271,7 +271,7 @@ internal → closed → production only after testing and declarations pass.
 
 ## 7. Apple Developer and iOS setup
 
-### 7.1 Enrol iTechLounge as an organisation
+### 7.1 Enrol your delivery team as an organisation
 
 Apple requires two-factor authentication, legal entity status, authority to
 bind the organisation and normally a D‑U‑N‑S number. Apple currently lists the
@@ -280,7 +280,7 @@ programme fee as USD 99/local equivalent. See
 
 ### 7.2 Create the identifier and app record
 
-1. Create an explicit App ID matching `uk.co.haccora.app`.
+1. Create an explicit App ID matching `uk.co.example-platform.app`.
 2. Enable only required capabilities, such as Push or Sign in with Apple.
 3. In App Store Connect create an app linked to that Bundle ID.
 4. Record the SKU and primary language.
@@ -345,7 +345,7 @@ Push-provider credentials are backend secrets, separate from the upload key.
 Run:
 
 ```text
-app_slug: haccora
+app_slug: example-platform
 platform: ios
 submit: false
 ```
@@ -408,7 +408,7 @@ self-hosted, macOS, ARM64, native-factory
 Install Node 22+, Xcode 26+, Android Studio 2025.2.1+ and SDK, Python 3.12,
 Ruby/Bundler/Fastlane, and CocoaPods only for apps set to `cocoapods`.
 
-Run `native-factory doctor haccora --platform all`. Use a dedicated runner
+Run `native-factory doctor example-platform --platform all`. Use a dedicated runner
 account, FileVault, automatic security updates, no plaintext permanent signing
 files and concurrency one.
 

@@ -63,8 +63,8 @@ apps:
       engine: expo
       runner: eas
       display_name: Example Expo App
-      ios_bundle_id: uk.co.itechlounge.exampleexpo
-      android_package: uk.co.itechlounge.exampleexpo
+      ios_bundle_id: uk.co.example.expoapp
+      android_package: uk.co.example.expoapp
       version: 1.0.0
       build_number: 1
       eas_profile: production

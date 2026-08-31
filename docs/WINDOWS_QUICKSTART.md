@@ -65,13 +65,13 @@ Use PowerShell backticks for continued lines:
 
 ```powershell
 native-factory onboard `
-  --slug haccora `
-  --name "Haccora" `
-  --repo "https://github.com/your-org/haccora-connect.git" `
-  --app-id "uk.co.haccora.app" `
-  --icon ".\assets\haccora\icon.png" `
-  --splash ".\assets\haccora\splash.png" `
-  --google-services-json ".\assets\haccora\google-services.json" `
+  --slug example-platform `
+  --name "Example Brand" `
+  --repo "https://github.com/your-org/example-platform-connect.git" `
+  --app-id "uk.co.example-platform.app" `
+  --icon ".\assets\example-platform\icon.png" `
+  --splash ".\assets\example-platform\splash.png" `
+  --google-services-json ".\assets\example-platform\google-services.json" `
   --runner github-macos `
   --package-manager bun `
   --capability camera `
@@ -86,9 +86,9 @@ Run:
 
 ```powershell
 native-factory validate
-native-factory doctor haccora --platform all
-native-factory web-check haccora
-native-factory readiness haccora --platform all --submit
+native-factory doctor example-platform --platform all
+native-factory web-check example-platform
+native-factory readiness example-platform --platform all --submit
 ```
 
 The doctor will report that native Xcode/Android checks run on GitHub-hosted
@@ -99,7 +99,7 @@ macOS. That is expected.
 Android upload keystore:
 
 ```powershell
-$bytes = [IO.File]::ReadAllBytes("C:\secure\haccora-upload.jks")
+$bytes = [IO.File]::ReadAllBytes("C:\secure\example-platform-upload.jks")
 [Convert]::ToBase64String($bytes) | Set-Clipboard
 ```
 
@@ -147,7 +147,7 @@ account credentials, `.env` or `.factory` build output.
 In the factory repository:
 
 1. Open **Settings → Environments**.
-2. Create `haccora` (matching the manifest slug).
+2. Create `example-platform` (matching the manifest slug).
 3. Add the secrets listed in `config/secrets.env.example`.
 4. Set Environment variable `MATCH_READONLY=false` for the first controlled
    Apple signing bootstrap, then change it to `true`.
@@ -163,7 +163,7 @@ Open **Actions → Build native app → Run workflow**.
 First Android:
 
 ```text
-app_slug: haccora
+app_slug: example-platform
 platform: android
 submit: false
 ```
@@ -171,7 +171,7 @@ submit: false
 Then iOS:
 
 ```text
-app_slug: haccora
+app_slug: example-platform
 platform: ios
 submit: false
 ```

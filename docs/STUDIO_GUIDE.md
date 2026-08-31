@@ -33,10 +33,10 @@ binary with its own icon, identifier and store record.
 
 | Suite | App role | Display name | Permanent identifier |
 | --- | --- | --- | --- |
-| `haccora` | `customer` | Haccora | `uk.co.haccora.customer` |
-| `haccora` | `manager` | Haccora Manager | `uk.co.haccora.manager` |
-| `haccora` | `kitchen` | Haccora Kitchen | `uk.co.haccora.kitchen` |
-| `haccora` | `inspector` | Haccora Inspector | `uk.co.haccora.inspector` |
+| `example-platform` | `customer` | Example Brand | `uk.co.example-platform.customer` |
+| `example-platform` | `manager` | Example Brand Manager | `uk.co.example-platform.manager` |
+| `example-platform` | `kitchen` | Example Brand Kitchen | `uk.co.example-platform.kitchen` |
+| `example-platform` | `inspector` | Example Brand Inspector | `uk.co.example-platform.inspector` |
 
 Use only the apps stakeholders genuinely need. A responsive role-based main app
 is usually easier than several nearly identical apps. Separate binaries are
@@ -67,8 +67,8 @@ const nativeRole = window.__NATIVE_FACTORY__?.role ??
 For each installed app, enter:
 
 1. Suite, app role, display name and slug.
-2. Brand domain and permanent ID. For Haccora use `uk.co.haccora.*`, not an
-   iTechLounge-prefixed ID.
+2. Brand domain and permanent ID. For Example Brand use `uk.co.example-platform.*`, not an
+   your delivery team-prefixed ID.
 3. Lovable GitHub URL, branch, package manager and `dist` output.
 4. Required native capabilities.
 5. Icon, splash and optional Firebase `google-services.json`.
@@ -91,7 +91,7 @@ changing app settings or assets and before starting a cloud build.
 
 For a brand-specific public developer profile, create or use the organisation
 developer account for that brand. The verified legal organisation may remain
-iTechLounge Ltd. Declare all associated developer accounts as Google requires.
+Brand Legal Entity Ltd. Declare all associated developer accounts as Google requires.
 
 Create the app using exactly the package entered in Studio. Enable Play App
 Signing, create a replaceable upload keystore and invite the release service
@@ -100,7 +100,7 @@ account with access only to this app.
 ### Apple
 
 Create the explicit App ID and App Store Connect record using exactly the
-Bundle ID entered in Studio. The public app name can be Haccora. Apple's
+Bundle ID entered in Studio. The public app name can be Example Brand. Apple's
 developer/seller name is account-wide; use a registered brand/trading name only
 where Apple accepts it for that organisation account.
 
@@ -167,9 +167,9 @@ changes. Native plugin, entitlement, permission, SDK or signing changes always
 require a new binary. Maintain a rollback channel and test live updates before
 production.
 
-## 10. Recommended Haccora rollout
+## 10. Recommended Example Brand rollout
 
-1. Configure the primary Haccora app first as `uk.co.haccora.app`.
+1. Configure the primary Example Brand app first as `uk.co.example-platform.app`.
 2. Complete Android internal testing and TestFlight.
 3. Prove authentication, tenant isolation, camera, documents, push and offline
    startup.
