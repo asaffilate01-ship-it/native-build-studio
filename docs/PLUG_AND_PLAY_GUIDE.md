@@ -39,7 +39,7 @@ assist while the client organisation enrols and submits the app.
 Each app always needs its own permanent identifier, for example:
 
 ```text
-uk.co.example-platform.app
+uk.co.brand.app
 com.taxcenda.app
 com.craftvaro.app
 ```
@@ -127,7 +127,7 @@ native-factory onboard \
   --slug example-platform \
   --name "Example Brand" \
   --repo "https://github.com/your-org/example-platform-connect.git" \
-  --app-id "uk.co.example-platform.app" \
+  --app-id "uk.co.brand.app" \
   --icon "assets/example-platform/icon.png" \
   --splash "assets/example-platform/splash.png" \
   --google-services-json "assets/example-platform/google-services.json" \
@@ -280,7 +280,7 @@ programme fee as USD 99/local equivalent. See
 
 ### 7.2 Create the identifier and app record
 
-1. Create an explicit App ID matching `uk.co.example-platform.app`.
+1. Create an explicit App ID matching `uk.co.brand.app`.
 2. Enable only required capabilities, such as Push or Sign in with Apple.
 3. In App Store Connect create an app linked to that Bundle ID.
 4. Record the SKU and primary language.

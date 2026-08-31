@@ -68,7 +68,7 @@ native-factory onboard `
   --slug example-platform `
   --name "Example Brand" `
   --repo "https://github.com/your-org/example-platform-connect.git" `
-  --app-id "uk.co.example-platform.app" `
+  --app-id "uk.co.brand.app" `
   --icon ".\assets\example-platform\icon.png" `
   --splash ".\assets\example-platform\splash.png" `
   --google-services-json ".\assets\example-platform\google-services.json" `

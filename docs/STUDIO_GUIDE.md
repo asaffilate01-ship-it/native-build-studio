@@ -33,10 +33,10 @@ binary with its own icon, identifier and store record.
 
 | Suite | App role | Display name | Permanent identifier |
 | --- | --- | --- | --- |
-| `example-platform` | `customer` | Example Brand | `uk.co.example-platform.customer` |
-| `example-platform` | `manager` | Example Brand Manager | `uk.co.example-platform.manager` |
-| `example-platform` | `kitchen` | Example Brand Kitchen | `uk.co.example-platform.kitchen` |
-| `example-platform` | `inspector` | Example Brand Inspector | `uk.co.example-platform.inspector` |
+| `example-platform` | `customer` | Example Brand | `uk.co.brand.customer` |
+| `example-platform` | `manager` | Example Brand Manager | `uk.co.brand.manager` |
+| `example-platform` | `kitchen` | Example Brand Kitchen | `uk.co.brand.kitchen` |
+| `example-platform` | `inspector` | Example Brand Inspector | `uk.co.brand.inspector` |
 
 Use only the apps stakeholders genuinely need. A responsive role-based main app
 is usually easier than several nearly identical apps. Separate binaries are
@@ -67,7 +67,7 @@ const nativeRole = window.__NATIVE_FACTORY__?.role ??
 For each installed app, enter:
 
 1. Suite, app role, display name and slug.
-2. Brand domain and permanent ID. For Example Brand use `uk.co.example-platform.*`, not an
+2. Brand domain and permanent ID. For Example Brand use `uk.co.brand.*`, not an
    your delivery team-prefixed ID.
 3. Lovable GitHub URL, branch, package manager and `dist` output.
 4. Required native capabilities.
@@ -169,7 +169,7 @@ production.
 
 ## 10. Recommended Example Brand rollout
 
-1. Configure the primary Example Brand app first as `uk.co.example-platform.app`.
+1. Configure the primary Example Brand app first as `uk.co.brand.app`.
 2. Complete Android internal testing and TestFlight.
 3. Prove authentication, tenant isolation, camera, documents, push and offline
    startup.
