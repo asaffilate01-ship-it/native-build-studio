@@ -14,15 +14,22 @@ For the guided dashboard, double-click `START_NATIVE_FACTORY_STUDIO.cmd` and
 follow [the Studio guide](docs/STUDIO_GUIDE.md). The dashboard configures apps,
 suites, assets, GitHub secrets, update bridges, builds and downloaded outputs.
 
+The hosted Lovable control plane now includes a **Launchpad**. It is the normal
+operator path: select a role app, complete source/native settings, record the
+brand-owned Apple and Google accounts, upload private artwork and service
+files, run preflight, then queue signed TestFlight and Play Internal builds.
+Apply every migration in `supabase/migrations/`, including
+`20260831010000_launchpad_assets_and_connections.sql`, before opening it.
+
 ## The engine boundary
 
 Use the same control plane, but do not force every source project through the
 same compiler:
 
-| Source project | Native engine | Build runner |
-| --- | --- | --- |
-| Lovable/Vite/React web export | Capacitor 8 | GitHub-hosted Mac, Mac mini, or Ionic Appflow |
-| Real Expo/React Native project | Expo/EAS | EAS Build |
+| Source project                 | Native engine | Build runner                                  |
+| ------------------------------ | ------------- | --------------------------------------------- |
+| Lovable/Vite/React web export  | Capacitor 8   | GitHub-hosted Mac, Mac mini, or Ionic Appflow |
+| Real Expo/React Native project | Expo/EAS      | EAS Build                                     |
 
 The EAS path in this factory is reserved for Expo and React Native projects.
 Lovable/Capacitor apps use macOS or Appflow. A Lovable project can be rewritten
@@ -31,7 +38,8 @@ fail store minimum-functionality review.
 
 ## What this starter includes
 
-- One YAML manifest for any number of apps.
+- A Supabase-driven runtime manifest for any number of apps (with YAML still
+  supported for local/offline operation).
 - Unique bundle/package ID validation before a build starts.
 - Isolated source checkout and build workspace per app.
 - Capacitor 8 shell generation, icons/splash generation, and `cap sync`.
@@ -83,6 +91,13 @@ native-factory plan example-customer --platform all
 native-factory studio
 ```
 
+For hosted control-plane builds, no duplicate manifest editing is required.
+The GitHub workflow runs `native-factory hydrate <slug>` to fetch the selected
+app, listing and protected assets from Supabase into an ephemeral runtime
+manifest. Store `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in the factory
+repository/app GitHub Environments; never expose the service-role key to the
+Lovable frontend.
+
 After adding real repository and asset paths:
 
 ```bash
@@ -104,7 +119,7 @@ Start from `config/apps.example.yml`. Each app defines:
   build number;
 - icon and splash paths;
 - optional native capabilities and iOS package manager;
-- environment-variable *names* for credentials, never credential values.
+- environment-variable _names_ for credentials, never credential values.
 
 Capacitor uses one `appId`, so this starter requires the iOS bundle ID and
 Android package to be identical. An existing released app must retain its
@@ -125,23 +140,23 @@ for offline startup, version control, and store review.
 Create one GitHub Environment named exactly like each app slug. Every
 environment can reuse the same secret names while holding different values:
 
-| Secret | Purpose |
-| --- | --- |
-| `APPLE_KEY_ID` | App Store Connect API key ID |
-| `APPLE_ISSUER_ID` | App Store Connect issuer ID |
-| `APPLE_PRIVATE_KEY_B64` | Base64 of the downloaded `.p8` key |
-| `MATCH_GIT_URL` | Private Fastlane Match certificate repository |
-| `MATCH_REPO_TOKEN` | Restricted read/write token for the Match repository |
-| `MATCH_PASSWORD` | Match encryption password |
-| `GOOGLE_SERVICE_ACCOUNT_B64` | Base64 Play service-account JSON |
-| `ANDROID_KEYSTORE_B64` | Base64 Android upload keystore |
-| `ANDROID_KEYSTORE_PASSWORD` | Upload keystore password |
-| `ANDROID_KEY_ALIAS` | Upload key alias |
-| `ANDROID_KEY_PASSWORD` | Upload key password |
-| `EXPO_TOKEN` | Only for an Expo/EAS app |
-| `SOURCE_REPO_TOKEN` | Read-only access to private Lovable source repositories |
-| `SUPABASE_URL` | Control-plane project URL for build status callbacks |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server-only callback key; never expose to Lovable client code |
+| Secret                       | Purpose                                                       |
+| ---------------------------- | ------------------------------------------------------------- |
+| `APPLE_KEY_ID`               | App Store Connect API key ID                                  |
+| `APPLE_ISSUER_ID`            | App Store Connect issuer ID                                   |
+| `APPLE_PRIVATE_KEY_B64`      | Base64 of the downloaded `.p8` key                            |
+| `MATCH_GIT_URL`              | Private Fastlane Match certificate repository                 |
+| `MATCH_REPO_TOKEN`           | Restricted read/write token for the Match repository          |
+| `MATCH_PASSWORD`             | Match encryption password                                     |
+| `GOOGLE_SERVICE_ACCOUNT_B64` | Base64 Play service-account JSON                              |
+| `ANDROID_KEYSTORE_B64`       | Base64 Android upload keystore                                |
+| `ANDROID_KEYSTORE_PASSWORD`  | Upload keystore password                                      |
+| `ANDROID_KEY_ALIAS`          | Upload key alias                                              |
+| `ANDROID_KEY_PASSWORD`       | Upload key password                                           |
+| `EXPO_TOKEN`                 | Only for an Expo/EAS app                                      |
+| `SOURCE_REPO_TOKEN`          | Read-only access to private Lovable source repositories       |
+| `SUPABASE_URL`               | Control-plane project URL for build status callbacks          |
+| `SUPABASE_SERVICE_ROLE_KEY`  | Server-only callback key; never expose to Lovable client code |
 
 Set the non-secret Environment variable `MATCH_READONLY=false` for the first
 controlled Match bootstrap only, then change it to `true`.

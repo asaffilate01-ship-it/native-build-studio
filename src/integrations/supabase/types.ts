@@ -49,6 +49,147 @@ export type Database = {
           },
         ];
       };
+      app_assets: {
+        Row: {
+          app_id: string;
+          asset_type: string;
+          created_at: string;
+          id: string;
+          locale: string;
+          mime_type: string;
+          notes: string;
+          org_id: string;
+          original_name: string;
+          size_bytes: number;
+          status: string;
+          storage_path: string;
+          uploaded_by: string;
+        };
+        Insert: {
+          app_id: string;
+          asset_type: string;
+          created_at?: string;
+          id?: string;
+          locale?: string;
+          mime_type?: string;
+          notes?: string;
+          org_id: string;
+          original_name: string;
+          size_bytes?: number;
+          status?: string;
+          storage_path: string;
+          uploaded_by: string;
+        };
+        Update: {
+          app_id?: string;
+          asset_type?: string;
+          created_at?: string;
+          id?: string;
+          locale?: string;
+          mime_type?: string;
+          notes?: string;
+          org_id?: string;
+          original_name?: string;
+          size_bytes?: number;
+          status?: string;
+          storage_path?: string;
+          uploaded_by?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "app_assets_app_id_fkey";
+            columns: ["app_id"];
+            isOneToOne: false;
+            referencedRelation: "native_apps";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "app_assets_org_id_fkey";
+            columns: ["org_id"];
+            isOneToOne: false;
+            referencedRelation: "organisations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      app_connections: {
+        Row: {
+          account_email: string;
+          account_name: string;
+          app_id: string;
+          created_at: string;
+          environment_name: string;
+          external_id: string;
+          id: string;
+          issuer_id: string;
+          key_id: string;
+          notes: string;
+          org_id: string;
+          provider: string;
+          secret_names: Json;
+          service_account_email: string;
+          status: string;
+          updated_at: string;
+          verified_at: string | null;
+          verified_by: string | null;
+        };
+        Insert: {
+          account_email?: string;
+          account_name?: string;
+          app_id: string;
+          created_at?: string;
+          environment_name?: string;
+          external_id?: string;
+          id?: string;
+          issuer_id?: string;
+          key_id?: string;
+          notes?: string;
+          org_id: string;
+          provider: string;
+          secret_names?: Json;
+          service_account_email?: string;
+          status?: string;
+          updated_at?: string;
+          verified_at?: string | null;
+          verified_by?: string | null;
+        };
+        Update: {
+          account_email?: string;
+          account_name?: string;
+          app_id?: string;
+          created_at?: string;
+          environment_name?: string;
+          external_id?: string;
+          id?: string;
+          issuer_id?: string;
+          key_id?: string;
+          notes?: string;
+          org_id?: string;
+          provider?: string;
+          secret_names?: Json;
+          service_account_email?: string;
+          status?: string;
+          updated_at?: string;
+          verified_at?: string | null;
+          verified_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "app_connections_app_id_fkey";
+            columns: ["app_id"];
+            isOneToOne: false;
+            referencedRelation: "native_apps";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "app_connections_org_id_fkey";
+            columns: ["org_id"];
+            isOneToOne: false;
+            referencedRelation: "organisations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       native_app_plans: {
         Row: {
           app_id: string;
@@ -116,16 +257,23 @@ export type Database = {
           app_role: string;
           apple_app_id: string;
           apple_team_id: string;
+          build_command: string;
+          build_number: number;
+          capabilities: Json;
           created_at: string;
           credential_scope: string;
           display_name: string;
           engine: string;
+          github_environment: string;
           google_developer_name: string;
           id: string;
+          install_command: string;
           ios_bundle_id: string;
           legal_owner: string;
+          live_url: string;
           manifest: Json;
           org_id: string;
+          package_manager: string;
           privacy_url: string;
           public_brand: string;
           runner: string;
@@ -136,6 +284,8 @@ export type Database = {
           suite: string;
           support_url: string;
           updated_at: string;
+          version: string;
+          web_dir: string;
         };
         Insert: {
           active?: boolean;
@@ -143,16 +293,23 @@ export type Database = {
           app_role?: string;
           apple_app_id?: string;
           apple_team_id?: string;
+          build_command?: string;
+          build_number?: number;
+          capabilities?: Json;
           created_at?: string;
           credential_scope?: string;
           display_name: string;
           engine: string;
+          github_environment?: string;
           google_developer_name?: string;
           id?: string;
+          install_command?: string;
           ios_bundle_id: string;
           legal_owner?: string;
+          live_url?: string;
           manifest?: Json;
           org_id: string;
+          package_manager?: string;
           privacy_url?: string;
           public_brand?: string;
           runner: string;
@@ -163,6 +320,8 @@ export type Database = {
           suite: string;
           support_url?: string;
           updated_at?: string;
+          version?: string;
+          web_dir?: string;
         };
         Update: {
           active?: boolean;
@@ -170,16 +329,23 @@ export type Database = {
           app_role?: string;
           apple_app_id?: string;
           apple_team_id?: string;
+          build_command?: string;
+          build_number?: number;
+          capabilities?: Json;
           created_at?: string;
           credential_scope?: string;
           display_name?: string;
           engine?: string;
+          github_environment?: string;
           google_developer_name?: string;
           id?: string;
+          install_command?: string;
           ios_bundle_id?: string;
           legal_owner?: string;
+          live_url?: string;
           manifest?: Json;
           org_id?: string;
+          package_manager?: string;
           privacy_url?: string;
           public_brand?: string;
           runner?: string;
@@ -190,6 +356,8 @@ export type Database = {
           suite?: string;
           support_url?: string;
           updated_at?: string;
+          version?: string;
+          web_dir?: string;
         };
         Relationships: [
           {
@@ -515,6 +683,7 @@ export type Database = {
       store_listings: {
         Row: {
           account_deletion_url: string;
+          age_rating_notes: string;
           app_id: string;
           appflow_app_id: string;
           appflow_channel: string;
@@ -525,6 +694,8 @@ export type Database = {
           contact_email: string;
           contact_name: string;
           contact_phone: string;
+          copyright: string;
+          compliance_notes: string;
           declarations: Json;
           full_description: string;
           google_category: string;
@@ -532,10 +703,12 @@ export type Database = {
           keywords: string;
           locale: string;
           marketing_url: string;
+          marketing_notes: string;
           org_id: string;
           privacy_url: string;
           promotional_text: string;
           release_notes: string;
+          release_checks: Json;
           reviewer_notes: string;
           short_description: string;
           submission_status: string;
@@ -546,6 +719,7 @@ export type Database = {
         };
         Insert: {
           account_deletion_url?: string;
+          age_rating_notes?: string;
           app_id: string;
           appflow_app_id?: string;
           appflow_channel?: string;
@@ -556,6 +730,8 @@ export type Database = {
           contact_email?: string;
           contact_name?: string;
           contact_phone?: string;
+          copyright?: string;
+          compliance_notes?: string;
           declarations?: Json;
           full_description?: string;
           google_category?: string;
@@ -563,10 +739,12 @@ export type Database = {
           keywords?: string;
           locale?: string;
           marketing_url?: string;
+          marketing_notes?: string;
           org_id: string;
           privacy_url?: string;
           promotional_text?: string;
           release_notes?: string;
+          release_checks?: Json;
           reviewer_notes?: string;
           short_description?: string;
           submission_status?: string;
@@ -577,6 +755,7 @@ export type Database = {
         };
         Update: {
           account_deletion_url?: string;
+          age_rating_notes?: string;
           app_id?: string;
           appflow_app_id?: string;
           appflow_channel?: string;
@@ -587,6 +766,8 @@ export type Database = {
           contact_email?: string;
           contact_name?: string;
           contact_phone?: string;
+          copyright?: string;
+          compliance_notes?: string;
           declarations?: Json;
           full_description?: string;
           google_category?: string;
@@ -594,10 +775,12 @@ export type Database = {
           keywords?: string;
           locale?: string;
           marketing_url?: string;
+          marketing_notes?: string;
           org_id?: string;
           privacy_url?: string;
           promotional_text?: string;
           release_notes?: string;
+          release_checks?: Json;
           reviewer_notes?: string;
           short_description?: string;
           submission_status?: string;

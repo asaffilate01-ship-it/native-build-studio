@@ -25,7 +25,10 @@ export const Route = createFileRoute("/_authenticated/listing")({
           "Per-locale store copy, support and privacy URLs, policy declarations, artwork inventory and submission status.",
       },
       { property: "og:title", content: "Store listing — Native Factory Control Plane" },
-      { property: "og:description", content: "Everything a reviewer sees, prepared before hand-off." },
+      {
+        property: "og:description",
+        content: "Everything a reviewer sees, prepared before hand-off.",
+      },
     ],
   }),
   component: ListingPage,
@@ -48,6 +51,23 @@ const artworkFields = [
   { key: "google_feature_graphic", label: "Google feature graphic supplied" },
 ] as const;
 
+const releaseCheckFields = [
+  { key: "apple_bundle_registered", label: "Apple Bundle ID registered for this app" },
+  { key: "apple_app_record_created", label: "App Store Connect app record created" },
+  { key: "apple_privacy_confirmed", label: "Apple App Privacy answers completed and checked" },
+  { key: "google_app_record_created", label: "Google Play app record created" },
+  { key: "play_app_signing_enabled", label: "Play App Signing enabled" },
+  {
+    key: "google_data_safety_confirmed",
+    label: "Google Data Safety answers completed and checked",
+  },
+  { key: "store_agreements_active", label: "Agreements, tax and banking are active" },
+  {
+    key: "review_credentials_configured",
+    label: "Reviewer login saved in protected GitHub secrets",
+  },
+] as const;
+
 const textFields = [
   ["title", "Title"],
   ["subtitle", "Subtitle"],
@@ -67,9 +87,21 @@ const textFields = [
   ["contact_name", "Contact name"],
   ["contact_email", "Contact email"],
   ["contact_phone", "Contact phone"],
+  ["copyright", "Copyright"],
+  ["age_rating_notes", "Age-rating notes"],
+  ["compliance_notes", "Compliance notes"],
+  ["marketing_notes", "Marketing notes"],
 ] as const;
 
-const longFields = new Set(["full_description", "short_description", "reviewer_notes", "release_notes"]);
+const longFields = new Set([
+  "full_description",
+  "short_description",
+  "reviewer_notes",
+  "release_notes",
+  "age_rating_notes",
+  "compliance_notes",
+  "marketing_notes",
+]);
 
 type Listing = Record<string, unknown> & { id: string };
 
@@ -82,6 +114,7 @@ function ListingPage() {
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [declarations, setDeclarations] = useState<Record<string, boolean>>({});
   const [artwork, setArtwork] = useState<Record<string, boolean>>({});
+  const [releaseChecks, setReleaseChecks] = useState<Record<string, boolean>>({});
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
@@ -89,7 +122,12 @@ function ListingPage() {
     if (!appId && apps.length) setAppId(apps[0]!.id);
   }, [apps, appId]);
 
-  const { data: listing, isLoading, error, refetch } = useQuery({
+  const {
+    data: listing,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["listing", appId, locale],
     enabled: Boolean(appId),
     queryFn: async () => {
@@ -107,11 +145,12 @@ function ListingPage() {
   useEffect(() => {
     const next: Record<string, string> = {};
     textFields.forEach(([key]) => {
-      next[key] = ((listing?.[key] as string) ?? "");
+      next[key] = (listing?.[key] as string) ?? "";
     });
     setDraft(next);
-    setDeclarations((listing?.['declarations'] as Record<string, boolean>) ?? {});
-    setArtwork((listing?.['artwork'] as Record<string, boolean>) ?? {});
+    setDeclarations((listing?.["declarations"] as Record<string, boolean>) ?? {});
+    setArtwork((listing?.["artwork"] as Record<string, boolean>) ?? {});
+    setReleaseChecks((listing?.["release_checks"] as Record<string, boolean>) ?? {});
   }, [listing]);
 
   const save = useMutation({
@@ -123,9 +162,12 @@ function ListingPage() {
         ...draft,
         declarations,
         artwork,
+        release_checks: releaseChecks,
         ...(submissionStatus ? { submission_status: submissionStatus } : {}),
       };
-      const { error } = await supabase.from("store_listings").upsert(payload, { onConflict: "app_id,locale" });
+      const { error } = await supabase
+        .from("store_listings")
+        .upsert(payload, { onConflict: "app_id,locale" });
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
@@ -145,7 +187,10 @@ function ListingPage() {
   if (!apps.length) {
     return (
       <>
-        <PageHeader title="Store listing" description="Listings are recorded per role app and locale." />
+        <PageHeader
+          title="Store listing"
+          description="Listings are recorded per role app and locale."
+        />
         <EmptyState title="No role apps yet" description="Add a role app in Portfolio first." />
       </>
     );
@@ -157,8 +202,8 @@ function ListingPage() {
         title="Store listing"
         description="Copy, URLs, declarations and artwork for the hand-off pack. These switches prepare the submission; they do not replace Apple App Privacy or Play Data Safety, which must reflect real production behaviour."
         actions={
-          <StatusPill tone={statusTone((listing?.['submission_status'] as string) ?? "draft")}>
-            {((listing?.['submission_status'] as string) ?? "draft").replace("_", " ")}
+          <StatusPill tone={statusTone((listing?.["submission_status"] as string) ?? "draft")}>
+            {((listing?.["submission_status"] as string) ?? "draft").replace("_", " ")}
           </StatusPill>
         }
       />
@@ -177,7 +222,9 @@ function ListingPage() {
       </div>
 
       {isLoading ? <LoadingState /> : null}
-      {error ? <ErrorState message={(error as Error).message} onRetry={() => void refetch()} /> : null}
+      {error ? (
+        <ErrorState message={(error as Error).message} onRetry={() => void refetch()} />
+      ) : null}
 
       <form
         className="panel space-y-5 p-5"
@@ -194,13 +241,17 @@ function ListingPage() {
                   <textarea
                     rows={4}
                     value={draft[key] ?? ""}
-                    onChange={(event) => setDraft((prev) => ({ ...prev, [key]: event.target.value }))}
+                    onChange={(event) =>
+                      setDraft((prev) => ({ ...prev, [key]: event.target.value }))
+                    }
                     className="rounded-md border border-input bg-background px-3 py-2 text-sm"
                   />
                 ) : (
                   <input
                     value={draft[key] ?? ""}
-                    onChange={(event) => setDraft((prev) => ({ ...prev, [key]: event.target.value }))}
+                    onChange={(event) =>
+                      setDraft((prev) => ({ ...prev, [key]: event.target.value }))
+                    }
                     className="rounded-md border border-input bg-background px-3 py-2 text-sm"
                   />
                 )}
@@ -229,6 +280,29 @@ function ListingPage() {
         </fieldset>
 
         <fieldset className="space-y-2 border-t border-border pt-4">
+          <legend className="text-sm font-semibold">Store-console release checks</legend>
+          <p className="text-xs text-muted-foreground">
+            Confirm these only after checking the brand-owned Apple and Google consoles. The factory
+            uses them as production submission blockers.
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {releaseCheckFields.map((item) => (
+              <label key={item.key} className="flex items-center gap-2.5 text-sm">
+                <input
+                  type="checkbox"
+                  checked={Boolean(releaseChecks[item.key])}
+                  onChange={(event) =>
+                    setReleaseChecks((prev) => ({ ...prev, [item.key]: event.target.checked }))
+                  }
+                  className="h-4 w-4 accent-[var(--primary)]"
+                />
+                {item.label}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset className="space-y-2 border-t border-border pt-4">
           <legend className="text-sm font-semibold">Artwork inventory</legend>
           <div className="grid gap-2 sm:grid-cols-2">
             {artworkFields.map((item) => (
@@ -236,7 +310,9 @@ function ListingPage() {
                 <input
                   type="checkbox"
                   checked={Boolean(artwork[item.key])}
-                  onChange={(event) => setArtwork((prev) => ({ ...prev, [item.key]: event.target.checked }))}
+                  onChange={(event) =>
+                    setArtwork((prev) => ({ ...prev, [item.key]: event.target.checked }))
+                  }
                   className="h-4 w-4 accent-[var(--primary)]"
                 />
                 {item.label}
@@ -274,7 +350,9 @@ function ListingPage() {
           <button
             type="button"
             onClick={() => {
-              if (window.confirm("Record that a named human has submitted this listing for review?")) {
+              if (
+                window.confirm("Record that a named human has submitted this listing for review?")
+              ) {
                 save.mutate("submitted");
               }
             }}

@@ -42,6 +42,11 @@ def parser() -> argparse.ArgumentParser:
         help="Repeat for each native capability required by this app",
     )
     sub.add_parser("validate", help="Validate every app manifest and unique bundle ID")
+    hydrate = sub.add_parser(
+        "hydrate", help="Generate a runtime manifest and assets from the Supabase control plane"
+    )
+    hydrate.add_argument("slug")
+    hydrate.add_argument("--output", type=Path, default=Path("config/apps.runtime.yml"))
     metadata = sub.add_parser("metadata", help="Print machine-readable app metadata")
     metadata.add_argument("slug")
     plan = sub.add_parser("plan", help="Print commands without changing files or building")
@@ -105,6 +110,14 @@ def main(argv: list[str] | None = None) -> int:
             from .studio import run_studio
 
             run_studio(args.config, host=args.host, port=args.port)
+            return 0
+        if args.command == "hydrate":
+            from .control_plane import SupabaseControlPlane
+
+            client = SupabaseControlPlane.from_environment(required=True)
+            assert client is not None
+            path = client.hydrate_app_manifest(args.slug, args.output)
+            print(path)
             return 0
         config = load_config(args.config)
         if args.command == "validate":

@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.7.0
+
+- Added a hosted Launchpad for guided app setup, brand store accounts, uploads,
+  preflight and one-click internal-test builds.
+- Added private Supabase Storage assets with organisation-scoped RLS and client
+  validation for icons, launch artwork, Play graphics and Firebase package IDs.
+- Added non-secret Apple/Google connection records while keeping signing files
+  in protected GitHub Environments.
+- Added runtime manifest hydration so CI builds directly from control-plane
+  settings and no longer needs a duplicate hand-maintained app YAML record.
+- Added full store-console, privacy, data-safety, agreements, reviewer,
+  compliance and marketing confirmations to the listing workspace.
+- Updated hosted Mac, self-hosted Mac and EAS workflows to hydrate exact app
+  settings and uploaded assets before building or submitting.
+
 ## 0.6.0
 
 - Made examples and dashboard copy project-neutral for a multi-brand portfolio.

@@ -41,6 +41,7 @@ concurrency:
 jobs:
   inspect:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.app_slug || github.event.client_payload.app_slug }}
     outputs:
       engine: ${{ steps.app.outputs.engine }}
       runner: ${{ steps.app.outputs.runner }}
@@ -64,9 +65,12 @@ jobs:
           SHOULD_UPLOAD_METADATA: ${{ inputs.metadata || github.event.client_payload.metadata || 'false' }}
           SOURCE_SHA: ${{ inputs.source_sha || github.event.client_payload.source_sha || '' }}
           CONTROL_PLANE_JOB_ID: ${{ inputs.control_plane_job_id || github.event.client_payload.control_plane_job_id || '' }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          native-factory validate
-          metadata="$(native-factory metadata "$APP_SLUG")"
+          native-factory hydrate "$APP_SLUG" --output config/apps.runtime.yml
+          native-factory --config config/apps.runtime.yml validate
+          metadata="$(native-factory --config config/apps.runtime.yml metadata "$APP_SLUG")"
           echo "engine=$(python -c 'import json,sys; print(json.load(sys.stdin)["engine"])' <<< "$metadata")" >> "$GITHUB_OUTPUT"
           echo "runner=$(python -c 'import json,sys; print(json.load(sys.stdin)["runner"])' <<< "$metadata")" >> "$GITHUB_OUTPUT"
           echo "slug=$APP_SLUG" >> "$GITHUB_OUTPUT"
@@ -117,11 +121,14 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: >-
-          native-factory build "${{ needs.inspect.outputs.slug }}"
-          --platform "${{ needs.inspect.outputs.platform }}"
-          ${{ needs.inspect.outputs.submit == 'true' && '--submit' || '' }}
-          ${{ needs.inspect.outputs.metadata == 'true' && '--metadata' || '' }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          native-factory hydrate "${{ needs.inspect.outputs.slug }}" --output config/apps.runtime.yml
+          native-factory --config config/apps.runtime.yml build "${{ needs.inspect.outputs.slug }}" \
+            --platform "${{ needs.inspect.outputs.platform }}" \
+            ${{ needs.inspect.outputs.submit == 'true' && '--submit' || '' }} \
+            ${{ needs.inspect.outputs.metadata == 'true' && '--metadata' || '' }}
       - name: Report control-plane result
         if: always() && needs.inspect.outputs.control_plane_job_id != ''
         env:
@@ -188,11 +195,14 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: >-
-          native-factory build "${{ needs.inspect.outputs.slug }}"
-          --platform "${{ needs.inspect.outputs.platform }}"
-          ${{ needs.inspect.outputs.submit == 'true' && '--submit' || '' }}
-          ${{ needs.inspect.outputs.metadata == 'true' && '--metadata' || '' }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          native-factory hydrate "${{ needs.inspect.outputs.slug }}" --output config/apps.runtime.yml
+          native-factory --config config/apps.runtime.yml build "${{ needs.inspect.outputs.slug }}" \
+            --platform "${{ needs.inspect.outputs.platform }}" \
+            ${{ needs.inspect.outputs.submit == 'true' && '--submit' || '' }} \
+            ${{ needs.inspect.outputs.metadata == 'true' && '--metadata' || '' }}
       - name: Report control-plane result
         if: always() && needs.inspect.outputs.control_plane_job_id != ''
         env:
@@ -241,10 +251,13 @@ jobs:
           FACTORY_CI_RUN_NUMBER: ${{ github.run_number }}
           FACTORY_SOURCE_SHA: ${{ needs.inspect.outputs.source_sha }}
           SOURCE_REPO_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN }}
-        run: >-
-          native-factory build "${{ needs.inspect.outputs.slug }}"
-          --platform "${{ needs.inspect.outputs.platform }}"
-          ${{ needs.inspect.outputs.submit == 'true' && '--submit' || '' }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          native-factory hydrate "${{ needs.inspect.outputs.slug }}" --output config/apps.runtime.yml
+          native-factory --config config/apps.runtime.yml build "${{ needs.inspect.outputs.slug }}" \
+            --platform "${{ needs.inspect.outputs.platform }}" \
+            ${{ needs.inspect.outputs.submit == 'true' && '--submit' || '' }}
       - name: Report control-plane result
         if: always() && needs.inspect.outputs.control_plane_job_id != ''
         env:

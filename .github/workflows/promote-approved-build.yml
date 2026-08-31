@@ -68,10 +68,13 @@ jobs:
         id: metadata
         env:
           APP_SLUG: ${{ inputs.app_slug }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          native-factory validate
-          native-factory store-package "$APP_SLUG"
-          native-factory metadata "$APP_SLUG" > .factory-release.json
+          native-factory hydrate "$APP_SLUG" --output config/apps.runtime.yml
+          native-factory --config config/apps.runtime.yml validate
+          native-factory --config config/apps.runtime.yml store-package "$APP_SLUG"
+          native-factory --config config/apps.runtime.yml metadata "$APP_SLUG" > .factory-release.json
           echo "json=$(jq -c . .factory-release.json)" >> "$GITHUB_OUTPUT"
       - name: Prepare temporary store credentials
         env:

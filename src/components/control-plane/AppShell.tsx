@@ -5,6 +5,7 @@ import { useOrg, roleLabels } from "@/hooks/useOrg";
 import { cn } from "@/lib/utils";
 
 const navItems = [
+  { to: "/launchpad", label: "Launchpad", hint: "Set up, upload, check and run" },
   { to: "/portfolio", label: "Portfolio", hint: "Suites, role apps and IDs" },
   { to: "/planner", label: "App planner", hint: "Plan versions and approvals" },
   { to: "/readiness", label: "Capacitor readiness", hint: "Pre-wrapper checklist" },
@@ -61,7 +62,10 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className={cn("px-3 pb-4", menuOpen ? "block" : "hidden lg:block")}>
           {memberships.length > 1 ? (
             <div className="mb-3 px-2">
-              <label className="mb-1 block text-xs font-medium text-muted-foreground" htmlFor="org-switch">
+              <label
+                className="mb-1 block text-xs font-medium text-muted-foreground"
+                htmlFor="org-switch"
+              >
                 Organisation
               </label>
               <select

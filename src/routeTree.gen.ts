@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedBuildsRouteImport } from './routes/_authenticated/builds'
 import { Route as AuthenticatedDeliveryRouteImport } from './routes/_authenticated/delivery'
+import { Route as AuthenticatedLaunchpadRouteImport } from './routes/_authenticated/launchpad'
 import { Route as AuthenticatedListingRouteImport } from './routes/_authenticated/listing'
 import { Route as AuthenticatedPlannerRouteImport } from './routes/_authenticated/planner'
 import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
@@ -49,6 +50,11 @@ const AuthenticatedDeliveryRoute = AuthenticatedDeliveryRouteImport.update({
   path: '/delivery',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedLaunchpadRoute = AuthenticatedLaunchpadRouteImport.update({
+  id: '/launchpad',
+  path: '/launchpad',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedListingRoute = AuthenticatedListingRouteImport.update({
   id: '/listing',
   path: '/listing',
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/audit': typeof AuthenticatedAuditRoute
   '/builds': typeof AuthenticatedBuildsRoute
   '/delivery': typeof AuthenticatedDeliveryRoute
+  '/launchpad': typeof AuthenticatedLaunchpadRoute
   '/listing': typeof AuthenticatedListingRoute
   '/planner': typeof AuthenticatedPlannerRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByTo {
   '/audit': typeof AuthenticatedAuditRoute
   '/builds': typeof AuthenticatedBuildsRoute
   '/delivery': typeof AuthenticatedDeliveryRoute
+  '/launchpad': typeof AuthenticatedLaunchpadRoute
   '/listing': typeof AuthenticatedListingRoute
   '/planner': typeof AuthenticatedPlannerRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
@@ -100,6 +108,7 @@ export interface FileRoutesById {
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/builds': typeof AuthenticatedBuildsRoute
   '/_authenticated/delivery': typeof AuthenticatedDeliveryRoute
+  '/_authenticated/launchpad': typeof AuthenticatedLaunchpadRoute
   '/_authenticated/listing': typeof AuthenticatedListingRoute
   '/_authenticated/planner': typeof AuthenticatedPlannerRoute
   '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
@@ -113,6 +122,7 @@ export interface FileRouteTypes {
     | '/audit'
     | '/builds'
     | '/delivery'
+    | '/launchpad'
     | '/listing'
     | '/planner'
     | '/portfolio'
@@ -124,6 +134,7 @@ export interface FileRouteTypes {
     | '/audit'
     | '/builds'
     | '/delivery'
+    | '/launchpad'
     | '/listing'
     | '/planner'
     | '/portfolio'
@@ -136,6 +147,7 @@ export interface FileRouteTypes {
     | '/_authenticated/audit'
     | '/_authenticated/builds'
     | '/_authenticated/delivery'
+    | '/_authenticated/launchpad'
     | '/_authenticated/listing'
     | '/_authenticated/planner'
     | '/_authenticated/portfolio'
@@ -192,6 +204,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDeliveryRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/launchpad': {
+      id: '/_authenticated/launchpad'
+      path: '/launchpad'
+      fullPath: '/launchpad'
+      preLoaderRoute: typeof AuthenticatedLaunchpadRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/listing': {
       id: '/_authenticated/listing'
       path: '/listing'
@@ -227,6 +246,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedBuildsRoute: typeof AuthenticatedBuildsRoute
   AuthenticatedDeliveryRoute: typeof AuthenticatedDeliveryRoute
+  AuthenticatedLaunchpadRoute: typeof AuthenticatedLaunchpadRoute
   AuthenticatedListingRoute: typeof AuthenticatedListingRoute
   AuthenticatedPlannerRoute: typeof AuthenticatedPlannerRoute
   AuthenticatedPortfolioRoute: typeof AuthenticatedPortfolioRoute
@@ -237,6 +257,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedBuildsRoute: AuthenticatedBuildsRoute,
   AuthenticatedDeliveryRoute: AuthenticatedDeliveryRoute,
+  AuthenticatedLaunchpadRoute: AuthenticatedLaunchpadRoute,
   AuthenticatedListingRoute: AuthenticatedListingRoute,
   AuthenticatedPlannerRoute: AuthenticatedPlannerRoute,
   AuthenticatedPortfolioRoute: AuthenticatedPortfolioRoute,

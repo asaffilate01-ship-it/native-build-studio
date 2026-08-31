@@ -10,9 +10,11 @@ Lovable → GitHub → Native App Factory → Capacitor 8
          → Play internal testing + TestFlight
 ```
 
-On Windows, the easiest route is to double-click
-`START_NATIVE_FACTORY_STUDIO.cmd`. The local dashboard guides every field and
-opens the factory at `http://127.0.0.1:8787`.
+On Windows, use the hosted Lovable control plane and open **Launchpad**. It
+guides every field, private upload, account-readiness step, preflight and build
+without requiring Xcode on the PC. The local dashboard remains available by
+double-clicking `START_NATIVE_FACTORY_STUDIO.cmd` when you want an offline
+controller at `http://127.0.0.1:8787`.
 
 ## What you need for each app
 
@@ -32,13 +34,15 @@ opens the factory at `http://127.0.0.1:8787`.
 
 1. Export/sync the Lovable project to GitHub.
 2. Install this factory with `pip install -e .`.
-3. Open Native Factory Studio or run `native-factory onboard ...`.
+3. Open Launchpad, add/select the role app and complete App setup.
 4. Run `native-factory web-check <slug>`.
 5. Put the factory in a private GitHub repository.
 6. Create a GitHub Environment named exactly like the app slug.
 7. Create the Google Play app, upload key and service account.
 8. Create the Apple App ID, App Store Connect app, API key and Match signing.
-9. Add the documented secrets to the app's GitHub Environment.
+9. Add the secrets shown in Launchpad to the app's GitHub Environment, then
+   confirm the connection in Launchpad (secret values are never uploaded to
+   Supabase).
 10. Build Android with `submit: false`, test, then upload internally.
 11. Build iOS with `submit: false`, test, then upload to TestFlight.
 12. Complete store declarations, real-device QA and staged production release.

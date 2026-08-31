@@ -20,6 +20,10 @@ __pycache__/
 .venv/
 vendor/bundle/
 artifacts/
+config/apps.runtime.yml
+config/runtime-assets/
+store-assets/
+store-packages/
 *.p8
 *.p12
 *.jks
