@@ -8,8 +8,10 @@ import shutil
 import tempfile
 from pathlib import Path
 
+from .expo import save_build_evidence, validate_resolved_config
 from .models import App, ConfigError, FactoryConfig, Platform
 from .process import ProcessRunner
+from .source_inspection import require_engine
 from .submission import copy_store_package
 
 CAPABILITY_PLUGINS = {
@@ -494,13 +496,26 @@ class NativeFactory:
         root = self.config.work_dir / app.slug
         source_dir = root / "source"
         self._checkout(app, source_dir)
+        if not self.runner.dry_run:
+            evidence = root / "artifacts" / "eas-builds.json"
+            evidence.unlink(missing_ok=True)
+            require_engine(source_dir, "expo")
         self.runner.run(app.source.install_command, cwd=source_dir, shell=True)
         if not self.runner.dry_run:
-            app_json = source_dir / "app.json"
+            app_json = source_dir / "app.config.json"
             if not app_json.is_file():
-                raise ConfigError("EAS projects must contain app.json")
-            data = json.loads(app_json.read_text(encoding="utf-8"))
+                app_json = source_dir / "app.json"
+            dynamic = any((source_dir / name).is_file() for name in (
+                "app.config.js", "app.config.ts",
+            ))
+            if not app_json.is_file() and not dynamic:
+                raise ConfigError("Expo source requires app.json or app.config.json/js/ts")
+            data = json.loads(app_json.read_text(encoding="utf-8")) if app_json.is_file() else {}
+            if not isinstance(data, dict):
+                raise ConfigError("Static Expo configuration must be an object")
             expo = data.setdefault("expo", {})
+            if not isinstance(expo, dict):
+                raise ConfigError("Static Expo configuration must contain an expo object")
             expo.update({"name": app.native.display_name, "version": app.native.version})
             expo.setdefault("ios", {})["bundleIdentifier"] = app.native.ios_bundle_id
             expo.setdefault("android", {})["package"] = app.native.android_package
@@ -514,10 +529,17 @@ class NativeFactory:
             expo["icon"] = "./.factory-assets/icon.png"
             expo["splash"] = {"image": "./.factory-assets/splash.png", "resizeMode": "contain"}
             app_json.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+        resolved = self.runner.run(
+            ["npx", "expo", "config", "--json"], cwd=source_dir, capture=True,
+        )
+        if not self.runner.dry_run:
+            validate_resolved_config(resolved, app, platform)
         command = [
             "npx", "eas-cli", "build", "--platform", platform, "--profile",
-            app.native.eas_profile, "--non-interactive", "--no-wait",
+            app.native.eas_profile, "--non-interactive", "--wait", "--json",
         ]
         if submit:
             command.append("--auto-submit")
-        self.runner.run(command, cwd=source_dir)
+        result = self.runner.run(command, cwd=source_dir, capture=True)
+        if not self.runner.dry_run:
+            save_build_evidence(result, root / "artifacts", platform, submit)

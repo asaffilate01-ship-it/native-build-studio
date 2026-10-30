@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -11,6 +12,7 @@ from .models import ConfigError
 from .onboarding import onboard_capacitor_app
 from .process import ProcessRunner
 from .readiness import app_readiness, has_failures, render_checks, toolchain_doctor
+from .source_inspection import inspect_source
 from .submission import generate_store_package, write_capacitor_brief
 
 
@@ -41,6 +43,8 @@ def parser() -> argparse.ArgumentParser:
         default=[],
         help="Repeat for each native capability required by this app",
     )
+    inspect = sub.add_parser("inspect-source", help="Recommend a build route without executing source")
+    inspect.add_argument("directory", type=Path)
     sub.add_parser("validate", help="Validate every app manifest and unique bundle ID")
     hydrate = sub.add_parser(
         "hydrate", help="Generate a runtime manifest and assets from the Supabase control plane"
@@ -83,6 +87,9 @@ def parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
     try:
+        if args.command == "inspect-source":
+            print(json.dumps(inspect_source(args.directory), indent=2))
+            return 0
         if args.command == "onboard":
             onboard_capacitor_app(
                 args.config,
@@ -180,7 +187,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "plan":
             print("\n".join(commands))
         return 0
-    except (ConfigError, OSError, ValueError) as exc:
+    except (ConfigError, OSError, ValueError, subprocess.CalledProcessError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 

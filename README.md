@@ -36,6 +36,32 @@ Lovable/Capacitor apps use macOS or Appflow. A Lovable project can be rewritten
 as an Expo app, but a simple WebView does not provide the same result and may
 fail store minimum-functionality review.
 
+## Source checks and verified Expo builds
+
+Run `native-factory inspect-source /path/to/app` to recommend an engine from
+package metadata without executing source code. This is a framework check,
+not a guarantee that a web app has a usable static export. Expo builds enforce
+that both Expo and React Native are present before installing dependencies.
+
+The Expo route supports `app.json`, `app.config.json`, `app.config.js` and
+`app.config.ts`. Static identity/assets are prepared only in the isolated build
+checkout. Dynamic files are preserved: they should merge the supplied `config`
+or resolve to the factory's display name, version and selected platform IDs.
+The resolved configuration must also contain `extra.eas.projectId`. Configure
+the EAS project, build profile and credentials in advance; the factory does not
+create accounts or convert web components to React Native. Environment-dependent
+configuration must resolve correctly in the runner and selected EAS environment.
+Dynamic configs retain control over their own assets and build numbering.
+
+EAS builds now wait for completion. Every requested platform must return a
+`FINISHED` build, ID and binary URL before the job succeeds. Selected evidence
+is saved to `.factory/work/<slug>/artifacts/eas-builds.json` and uploaded as a
+GitHub workflow artifact. Resolved configuration and full provider responses
+are not uploaded. Submission requests are recorded separately and must be
+checked in EAS; build success is not app-store approval. A timeout or failed
+workflow is not proof that the remote build was cancelled: inspect EAS before
+retrying to avoid duplicate builds.
+
 ## What this starter includes
 
 - A Supabase-driven runtime manifest for any number of apps (with YAML still
