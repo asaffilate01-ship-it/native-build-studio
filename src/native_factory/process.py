@@ -20,13 +20,18 @@ class ProcessRunner:
         cwd: Path,
         env: Mapping[str, str] | None = None,
         shell: bool = False,
-    ) -> None:
+        capture: bool = False,
+    ) -> str:
         printable = command if isinstance(command, str) else shlex.join(command)
         self.commands.append(f"cd {shlex.quote(str(cwd))} && {printable}")
         if self.dry_run:
-            return
+            return ""
         merged_env = os.environ.copy()
         if env:
             merged_env.update(env)
-        subprocess.run(command, cwd=cwd, env=merged_env, shell=shell, check=True)
+        result = subprocess.run(
+            command, cwd=cwd, env=merged_env, shell=shell, check=True,
+            stdout=subprocess.PIPE if capture else None, text=True,
+        )
+        return result.stdout if capture else ""
 

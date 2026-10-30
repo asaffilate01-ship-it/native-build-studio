@@ -139,7 +139,10 @@ function BuildsPage() {
   if (!apps.length) {
     return (
       <>
-        <PageHeader title="Build queue" description="Builds are queued against a role app." />
+        <PageHeader
+          title="Build queue"
+          description="Track builds for each role app. For Expo, success confirms completed binaries; check EAS separately for submission results."
+        />
         <EmptyState title="No role apps yet" description="Add a role app in Portfolio first." />
       </>
     );

@@ -1242,8 +1242,9 @@ function PreflightPanel({
         ) : null}
         {run.isSuccess ? (
           <p className="mt-3 text-sm text-success" role="status">
-            Build queued. GitHub Actions will compile and upload to TestFlight and Play Internal
-            Testing.
+            Build queued. Follow the build runner for compilation and internal-testing delivery. For
+            Expo, a successful build confirms binaries; store submission is tracked separately in
+            EAS.
           </p>
         ) : null}
         <button
