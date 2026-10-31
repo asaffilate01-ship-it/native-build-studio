@@ -1,0 +1,17 @@
+{
+  "name": "@itechlounge/portfolio-ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Copy-and-own UI primitives for React 18/19 portfolio applications",
+  "scripts": {
+    "test": "node --experimental-strip-types --test tests/*.test.mjs"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0 || ^19.0.0"
+  },
+  "exports": {
+    ".": "./src/index.tsx",
+    "./styles.css": "./src/kitchen-ui.css"
+  }
+}
