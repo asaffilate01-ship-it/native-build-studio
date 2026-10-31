@@ -2,6 +2,7 @@ import plistlib
 import struct
 import tempfile
 import unittest
+from unittest.mock import patch
 import zlib
 from pathlib import Path
 
@@ -75,7 +76,11 @@ class OnboardingTests(unittest.TestCase):
         self.assertFalse(has_failures(readiness))
         self.assertTrue(any(item.level == "INFO" for item in readiness))
 
-        doctor = toolchain_doctor(app, "all")
+        # A hosted macOS runner is a delivery target, not the Ubuntu runner
+        # executing this unit test. Simulate the local preflight context
+        # instead of inheriting GITHUB_ACTIONS=true from CI.
+        with patch.dict("os.environ", {"GITHUB_ACTIONS": "false"}):
+            doctor = toolchain_doctor(app, "all")
         self.assertFalse(has_failures(doctor))
         self.assertTrue(any(item.label == "native runner" for item in doctor))
 
