@@ -33,7 +33,7 @@ Update status here after CI, browser checks and merges.
 | Shared foundation | https://github.com/asaffilate01-ship-it/native-build-studio/pull/3 | **MERGED** at `62f0cf36` after both factory and portfolio-ui CI jobs passed |
 | Dishbee staging | https://github.com/asaffilate01-ship-it/dishbee-helper/pull/76 | Existing read-only deployment and transaction reviews; GitHub jobs failed without executing runner steps, so no reliable code verdict |
 | UniPathway | https://github.com/asaffilate01-ship-it/ascent-education-cloud/pull/151 | **MERGED** at `a56cd88d` after its full Production CI passed on rerun |
-| Haccora UK | https://github.com/asaffilate01-ship-it/haccora-connect/pull/70 | **BLOCKED**. Original Seroval advisory patched in branch, but separate mobile high/moderate audit findings block production CI |
+| Haccora UK | https://github.com/asaffilate01-ship-it/haccora-connect/pull/70 | **MERGED** at `299a78ed` after CodeQL, RLS, web/mobile, dependency audit and browser E2E checks passed |
 
 For open drafts, verify all required checks and actual signed-in browser interactions before merge; merged source does not establish published deployment.
 
@@ -51,8 +51,8 @@ For open drafts, verify all required checks and actual signed-in browser interac
 ### Release blockers and non-UI findings
 
 - Multiple EventPlanr, Kindelo and Zivvo GitHub runs reported failed **before executing any runner steps**. These failures do not validate or invalidate the UI code. Inspect GitHub Actions execution/billing/runner configuration before evaluating the PRs.
-- Haccora PR https://github.com/asaffilate01-ship-it/haccora-connect/pull/70 has a pinned root Seroval repair on branch, but cannot merge until the mobile dependency findings tracked in https://github.com/asaffilate01-ship-it/haccora-connect/issues/72 are resolved. Do **not** waive the security gate.
-- AmityOS Book Demo currently shows a success toast without transmitting an enquiry. Follow-up issue https://github.com/asaffilate01-ship-it/care-connect/issues/10 tracks proper backend delivery and non-misleading confirmations.
+- Haccora PR #70 merged after root `seroval` 1.7.3 and mobile `decode-uri-component` 0.5.1, `glob` 14.0.2 and `minimatch` 11.0.1 were validated; the full dependency audit passed. Security issues #71 and #72 were closed with release evidence.
+- AmityOS main now contains Turnstile-gated `request-demo` Edge Function source and a fallback email draft; however, source is not proof of a deployed email service. The Edge Function response syntax fix is in https://github.com/asaffilate01-ship-it/care-connect/pull/12; delivery acceptance is tracked at https://github.com/asaffilate01-ship-it/care-connect/issues/10.
 - Native App Factory CI is green and foundation PR #3 merged. The Python test fixture was made deterministic in the hosted runner environment.
 - UniPathway pilot PR https://github.com/asaffilate01-ship-it/ascent-education-cloud/pull/151 passed all Production CI jobs on rerun and merged; no IQA approval logic changed.
 
@@ -68,6 +68,22 @@ Do not merge drafts based on partial CI: all required test, accessibility, stagi
 ## Cross-portfolio blockers
 
 - https://github.com/asaffilate01-ship-it/native-build-studio/issues/4 — verify why GitHub-hosted runners do not start in some projects; jobs have zero steps and `runner_id=0`.
-- https://github.com/asaffilate01-ship-it/haccora-connect/issues/72 — mobile dependency audit identifies a high-severity `decode-uri-component` advisory and moderate `glob` / `minimatch` advisories.
+- https://github.com/asaffilate01-ship-it/haccora-connect/issues/72 — **RESOLVED**, fixed in merged Haccora PR #70 and confirmed by GitHub production audit.
 - https://github.com/asaffilate01-ship-it/care-connect/issues/10 — AmityOS demo form must not report transmission without backend acknowledgement.
 - Merged GitHub source is **not proof of publishing** to Lovable or acceptance on real mobile devices.
+
+## Phase 5 — completed and pending (31 October 2026)
+
+| Product | Pull request | Verified state |
+| --- | --- | --- |
+| Cafe 1 St Albans Crown Court | https://github.com/asaffilate01-ship-it/cafe1-connect-dash/pull/55 | **MERGED** at `4b420300`; production, companion, CodeQL and browser CI passed. Client postcode validation now ignores stale responses. |
+| Group Control | https://github.com/asaffilate01-ship-it/threeonethree/pull/3 | **DRAFT**; typecheck, unit tests, production build and design advisory passed, but repository-wide ESLint failures remain. Debt tracked at https://github.com/asaffilate01-ship-it/threeonethree/issues/4. |
+| AmityOS demo Edge Function | https://github.com/asaffilate01-ship-it/care-connect/pull/12 | **DRAFT**; fixes invalid `Response` status syntax and adds a syntax test, but private GitHub CI has no assigned runner. |
+
+### Actions runner diagnosis
+
+The jobs in some private repositories fail with `runner_id=0`, no steps and no logs; public repositories are able to run GitHub-hosted jobs. This points to a GitHub Actions provisioning/entitlement problem rather than an application test result. Confirm exact cause with account-owner Billing & licensing and repository Actions settings; see https://github.com/asaffilate01-ship-it/native-build-studio/issues/4. Never make private source public merely to save CI minutes.
+
+### Release integrity
+
+A GitHub `main` merge is not a live deployment. Keep real production publish, database migrations, provider readiness, sign-in/browser acceptance, and rollback separate for each SaaS.
