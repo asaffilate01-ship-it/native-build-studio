@@ -26,4 +26,13 @@ jobs:
       - run: native-factory --config config/apps.example.yml validate
       - run: bun install --frozen-lockfile
       - run: bun run build
-      - run: cd packages/portfolio-ui && npm test
+
+  portfolio-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm test
+        working-directory: packages/portfolio-ui
