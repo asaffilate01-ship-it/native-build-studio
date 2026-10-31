@@ -25,3 +25,15 @@ The goal is interaction consistency without replacing brands, production databas
 
 The source package and pilot PRs are implementation work, **not** evidence of production deployment.
 Update status here after CI, browser checks and merges.
+
+## Actual first-wave pull requests (31 October 2026)
+
+| Area | Pull request | Scope and verification status |
+| --- | --- | --- |
+| Shared foundation | https://github.com/asaffilate01-ship-it/native-build-studio/pull/3 | 4 components, installer, Node tests, CSS tokens; dedicated `portfolio-ui` job passed; broader factory Python onboarding test separately failed |
+| Dishbee staging | https://github.com/asaffilate01-ship-it/dishbee-helper/pull/76 | Existing read-only deployment and transaction reviews; GitHub jobs failed without executing runner steps, so no reliable code verdict |
+| UniPathway | https://github.com/asaffilate01-ship-it/ascent-education-cloud/pull/151 | Authenticated work-queue refresh; typecheck, build, lint, database and browser acceptance jobs passed; separate IQA-review unit test failed |
+| Haccora UK | https://github.com/asaffilate01-ship-it/haccora-connect/pull/70 | Recovery control; initially a shallow test had hard-coded native button identity; test updated to accept the reusable button, rerun pending |
+
+Do not merge or deploy these drafts solely on the basis of green sub-jobs. Verify all required gates and actual signed-in browser interactions.
+
