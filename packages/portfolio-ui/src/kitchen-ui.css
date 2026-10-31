@@ -158,11 +158,6 @@
   white-space: nowrap !important;
   border: 0 !important;
 }
-@media (prefers-color-scheme: dark) {
-  .itu-action--secondary,
-  .itu-hold,
-  .itu-metric { --itu-surface: var(--itu-surface-dark, #242d3d); --itu-text: var(--itu-text-dark, #f8fafc); --itu-border: var(--itu-border-dark, #455164); }
-}
 @media (prefers-reduced-motion: reduce) {
   .itu-action,
   .itu-hold,
