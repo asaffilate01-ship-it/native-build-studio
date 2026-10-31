@@ -243,11 +243,11 @@ export function MetricSparkline({
   const min = hasTrend ? Math.min(...points) : 0;
   const max = hasTrend ? Math.max(...points) : 1;
   const range = Math.max(max - min, 1);
-  const coordinates = points.map((value, index) => {
+  const coordinates = hasTrend ? points.map((value, index) => {
     const x = 6 + (index / (points.length - 1)) * 228;
     const y = 66 - ((value - min) / range) * 60;
     return x.toFixed(2) + "," + y.toFixed(2);
-  }).join(" ");
+  }).join(" ") : "";
   return (
     <figure className={["itu-metric", className].filter(Boolean).join(" ")}>
       <figcaption className="itu-metric__label">{label}</figcaption>
