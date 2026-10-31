@@ -37,3 +37,24 @@ Update status here after CI, browser checks and merges.
 
 Do not merge or deploy these drafts solely on the basis of green sub-jobs. Verify all required gates and actual signed-in browser interactions.
 
+
+## Phase 3 pull requests — 31 October 2026
+
+| Product | Pull request | Change |
+| --- | --- | --- |
+| EventPlanr UK | https://github.com/asaffilate01-ship-it/eventplanr2/pull/28 | Workspace retry + release gate refresh progress |
+| EventPlanr Germany | https://github.com/asaffilate01-ship-it/eventplanrger/pull/34 | EN/DE workspace retry |
+| Kindelo | https://github.com/asaffilate01-ship-it/kindelo-uk/pull/89 | SkillFinch connected learning refresh + connection retry |
+| AmityOS | https://github.com/asaffilate01-ship-it/care-connect/pull/9 | AI Insights loading feedback and keyboard-accessible collapse |
+| Zivvo UK/DE | https://github.com/asaffilate01-ship-it/zivvo/pull/33 | Save-search/offer pending and error recovery + German copy |
+
+### Release blockers and non-UI findings
+
+- Multiple EventPlanr, Kindelo and Zivvo GitHub runs reported failed **before executing any runner steps**. These failures do not validate or invalidate the UI code. Inspect GitHub Actions execution/billing/runner configuration before evaluating the PRs.
+- Haccora PR https://github.com/asaffilate01-ship-it/haccora-connect/pull/70 passed the UI code lint and type/test gates on its latest check, but was blocked by the existing production dependency audit identifying moderate `seroval` advisories. Do **not** waive the security gate.
+- AmityOS Book Demo currently shows a success toast without transmitting an enquiry. Follow-up issue https://github.com/asaffilate01-ship-it/care-connect/issues/10 tracks proper backend delivery and non-misleading confirmations.
+- Shared foundation's independent `portfolio-ui` test job passed; the older Native App Factory Python onboarding test failed before its unrelated build stages.
+- UniPathway pilot PR https://github.com/asaffilate01-ship-it/ascent-education-cloud/pull/151 passed build/typecheck/lint/database/browser CI but an unrelated IQA-review unit test failed.
+
+Do not merge drafts based on partial CI: all required test, accessibility, staging and native gates must pass, including security. Every PR remains independent and reviewable.
+
