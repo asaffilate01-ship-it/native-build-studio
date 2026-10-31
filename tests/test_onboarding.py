@@ -2,9 +2,9 @@ import plistlib
 import struct
 import tempfile
 import unittest
-from unittest.mock import patch
 import zlib
 from pathlib import Path
+from unittest.mock import patch
 
 from native_factory.config import load_config
 from native_factory.factory import NativeFactory
