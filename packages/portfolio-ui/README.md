@@ -27,6 +27,19 @@ Styles are prefixed with \`itu-\` and opt-in. All components are local (no new n
 This intentionally works with Vite/Tailwind 3, Vite/Tailwind 4, and TanStack Start as an ordinary client React module.
 Vite loads CSS via the component's CSS import. For SSR, ensure the component is used in an interactive client boundary.
 
+### Scalable installer (no Lovable credits)
+
+The included installer copies exactly three files into an existing React 18/19 checkout; it does not rewrite screens, update dependency manifests, edit backend config or overwrite a previous copy.
+
+Run from this repository:
+
+\`\`\`sh
+node packages/portfolio-ui/scripts/adopt.mjs --target=../your-saas --brand=hsl --dry-run
+node packages/portfolio-ui/scripts/adopt.mjs --target=../your-saas --brand=hsl
+\`\`\`
+
+Use \`--brand=oklch\` for Tailwind 4 apps with native colour values, or \`--brand=none\` for manual theming. After installation manually choose real user actions to enhance, run target-specific CI and inspect responsive/accessibility behavior before opening a PR.
+
 ## Brand tokens
 
 Set these optional CSS properties in the host theme; do **not** replace the host brand theme:
