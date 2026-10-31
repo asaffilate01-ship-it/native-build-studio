@@ -26,3 +26,4 @@ jobs:
       - run: native-factory --config config/apps.example.yml validate
       - run: bun install --frozen-lockfile
       - run: bun run build
+      - run: cd packages/portfolio-ui && npm test
