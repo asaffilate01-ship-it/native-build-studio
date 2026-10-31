@@ -1,0 +1,19 @@
+name: Design quality (advisory)
+on:
+  pull_request:
+    paths: ["src/**", "DESIGN.md", "PRODUCT.md", "AGENTS.md", ".github/workflows/design-quality.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  impeccable-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Impeccable detector (advisory)
+        continue-on-error: true
+        run: npx --yes impeccable@4.8.0 detect --github src/
